@@ -37,9 +37,7 @@ class NotificationsRegistration {
       return true;
     }
 
-    if (kIsWeb) {
-      return false;
-    }
+    if (kIsWeb) return false;
 
     final task = Completer<bool>();
     bool isCompleted = false;
@@ -70,9 +68,7 @@ class NotificationsRegistration {
     if (user == null) return false;
 
     final fcmToken = await getFcmToken();
-    if (fcmToken == null) {
-      return false;
-    }
+    if (fcmToken == null) return false;
 
     try {
       await _upsertFirebaseDoc(fcmToken, notificationsEnabled: true);
@@ -161,37 +157,65 @@ class NotificationsRegistration {
 
     if (data == null) return false;
 
-    if (data['enable_notifications'] == null) return false;
-
-    return data['enable_notifications'] as bool;
+    return data['enable_notifications'] as bool? ?? false;
   }
 
+  /// SAFELY get daily update time options from Remote Config
   Future<List<DailyUpdateTimeOption>> getDailyUpdateTimeOptions() async {
-    if (FirebaseRemoteConfig.instance.lastFetchStatus !=
-        RemoteConfigFetchStatus.success) {
-      await FirebaseRemoteConfig.instance.fetchAndActivate();
+    try {
+      if (FirebaseRemoteConfig.instance.lastFetchStatus !=
+          RemoteConfigFetchStatus.success) {
+        await FirebaseRemoteConfig.instance.fetchAndActivate();
+      }
+
+      final rawJson =
+          FirebaseRemoteConfig.instance.getString('daily_update_time').trim();
+
+      if (rawJson.isEmpty) {
+        // Fallback if Remote Config is not set yet
+        return [
+          DailyUpdateTimeOption(9, 0, 0),
+          DailyUpdateTimeOption(1, 0, 0),
+          DailyUpdateTimeOption(18, 0, 0),
+        ];
+      }
+
+      final rawTimeOptions = jsonDecode(rawJson) as List<dynamic>? ?? [];
+
+      final asListString = rawTimeOptions.map((e) => e.toString()).toList();
+
+      return asListString.map(DailyUpdateTimeOption.fromTimeString).toList();
+    } catch (e) {
+      if (kDebugMode) print('Failed to load daily_update_time from Remote Config: $e');
+      // Fallback
+      return [
+        DailyUpdateTimeOption(9, 0, 0),
+        DailyUpdateTimeOption(1, 0, 0),
+        DailyUpdateTimeOption(18, 0, 0),
+      ];
     }
-
-    final rawTimeOptions =
-        jsonDecode(FirebaseRemoteConfig.instance.getString('daily_update_time'))
-                as List<dynamic>? ??
-            [];
-
-    final asListString = rawTimeOptions.map((e) => e.toString()).toList();
-
-    return asListString.map(DailyUpdateTimeOption.fromTimeString).toList();
   }
 
+  /// SAFELY get default daily update time
   Future<DailyUpdateTimeOption> getDefaultDailyUpdateTime() async {
-    if (FirebaseRemoteConfig.instance.lastFetchStatus !=
-        RemoteConfigFetchStatus.success) {
-      await FirebaseRemoteConfig.instance.fetchAndActivate();
+    try {
+      if (FirebaseRemoteConfig.instance.lastFetchStatus !=
+          RemoteConfigFetchStatus.success) {
+        await FirebaseRemoteConfig.instance.fetchAndActivate();
+      }
+
+      final rawTime =
+          FirebaseRemoteConfig.instance.getString('default_daily_update_time').trim();
+
+      if (rawTime.isEmpty) {
+        return DailyUpdateTimeOption(9, 0, 0); // default 9:00
+      }
+
+      return DailyUpdateTimeOption.fromTimeString(rawTime);
+    } catch (e) {
+      if (kDebugMode) print('Failed to load default_daily_update_time: $e');
+      return DailyUpdateTimeOption(9, 0, 0);
     }
-
-    final rawTime =
-        FirebaseRemoteConfig.instance.getString('default_daily_update_time');
-
-    return DailyUpdateTimeOption.fromTimeString(rawTime);
   }
 
   Future<DailyUpdateTimeOption> getDailyUpdateTime() async {
@@ -200,10 +224,9 @@ class NotificationsRegistration {
 
     final data = await getFirebaseDocData(fcmToken);
 
-    if (data == null) return await getDefaultDailyUpdateTime();
-
-    if (data['daily_update_time'] == null)
+    if (data == null || data['daily_update_time'] == null) {
       return await getDefaultDailyUpdateTime();
+    }
 
     return DailyUpdateTimeOption.fromTimeString(
         data['daily_update_time'] as String);
@@ -226,19 +249,28 @@ class DailyUpdateTimeOption {
 
   const DailyUpdateTimeOption(this.hours, this.minutes, this.seconds);
 
+  /// Now safe even if the string is empty or malformed
   factory DailyUpdateTimeOption.fromTimeString(String timeString) {
-    final splitted = timeString.split(':');
+    final trimmed = timeString.trim();
+    if (trimmed.isEmpty) {
+      return const DailyUpdateTimeOption(9, 0, 0); // safe default
+    }
 
-    final hours = int.parse(splitted[0]);
-    final minutes = int.parse(splitted[1]);
-    final seconds = splitted.length == 3 ? int.parse(splitted[2]) : 0;
+    final splitted = trimmed.split(':');
+
+    final hours = int.tryParse(splitted[0]) ?? 9;
+    final minutes = splitted.length > 1 ? int.tryParse(splitted[1]) ?? 0 : 0;
+    final seconds = splitted.length > 2 ? int.tryParse(splitted[2]) ?? 0 : 0;
 
     return DailyUpdateTimeOption(hours, minutes, seconds);
   }
 
   String get label {
-    DateTime time =
-        DateTime.now().copyWith(hour: hours, minute: minutes, second: seconds);
+    final time = DateTime.now().copyWith(
+      hour: hours,
+      minute: minutes,
+      second: seconds,
+    );
 
     if (seconds == 0) {
       return DateFormat('HH:mm').format(time);
@@ -246,33 +278,15 @@ class DailyUpdateTimeOption {
     return DateFormat('HH:mm:ss').format(time);
   }
 
-  // set equal operator and hash
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-
     return other is DailyUpdateTimeOption &&
-        (other.minutes == minutes &&
-            other.seconds == seconds &&
-            other.hours == hours);
+        other.hours == hours &&
+        other.minutes == minutes &&
+        other.seconds == seconds;
   }
 
   @override
   int get hashCode => label.hashCode;
 }
-
-// POST TO: https://fcm.googleapis.com/fcm/send
-
-// HEADERS:
-// Bearer ..server_token...
-
-// {
-//   "to":"...fcm_token...",
-//   "notification":{
-//     "title":"New birthday!",
-//     "body":"28 years old today!"
-//   },
-//   "data" : {
-//     "birthday_id" : "...",
-//   }
-// }

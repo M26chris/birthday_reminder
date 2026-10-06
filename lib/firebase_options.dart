@@ -41,57 +41,48 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCedUwZjWznB0m81_nf9IY0CREOIQSNYIc',
-    appId: '1:1018512304007:web:b3d446df1b1499f56b5522',
-    messagingSenderId: '1018512304007',
-    projectId: 'birthday-remainder-app',
-    authDomain: 'birthday-remainder-app.firebaseapp.com',
-    databaseURL: 'https://birthday-remainder-app.firebaseio.com',
-    storageBucket: 'birthday-remainder-app.appspot.com',
-    measurementId: 'G-TBPBYSD32G',
+    apiKey: 'AIzaSyAbPG_N-iU15OQVybYtqPxy5mK7cBaUxBU',
+    appId: '1:1006967606:web:a2c6f2033dd523d0557197',
+    messagingSenderId: '1006967606',
+    projectId: 'remindra-bc8e5',
+    authDomain: 'remindra-bc8e5.firebaseapp.com',
+    storageBucket: 'remindra-bc8e5.firebasestorage.app',
+    measurementId: 'G-DBYS265X0T',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCER1YAnYZxnaasCam2QEAQeApJos0L1G0',
-    appId: '1:1018512304007:android:c5bcfb60f613e2a76b5522',
-    messagingSenderId: '1018512304007',
-    projectId: 'birthday-remainder-app',
-    databaseURL: 'https://birthday-remainder-app.firebaseio.com',
-    storageBucket: 'birthday-remainder-app.appspot.com',
+    apiKey: 'AIzaSyC_peBAUXI6NrOc-KQES018ZZOosBBdmpM',
+    appId: '1:1006967606:android:2623ddb2a2981e7c557197',
+    messagingSenderId: '1006967606',
+    projectId: 'remindra-bc8e5',
+    storageBucket: 'remindra-bc8e5.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyAeBgJIii0PJ6z0kaRHYKlxJ6Y2pBqq25Y',
-    appId: '1:1018512304007:ios:a49fafd06ee38b9c6b5522',
-    messagingSenderId: '1018512304007',
-    projectId: 'birthday-remainder-app',
-    databaseURL: 'https://birthday-remainder-app.firebaseio.com',
-    storageBucket: 'birthday-remainder-app.appspot.com',
-    androidClientId: '1018512304007-37g6mopnqacg7hsedrd7monil2rgjb6k.apps.googleusercontent.com',
-    iosClientId: '1018512304007-60mk697phbofj0skvubs5banqdik6ph8.apps.googleusercontent.com',
+    apiKey: 'AIzaSyCLXwoy-RDudEAQeJCF-kRhv7uHVyly-p4',
+    appId: '1:1006967606:ios:9859c61bb5548458557197',
+    messagingSenderId: '1006967606',
+    projectId: 'remindra-bc8e5',
+    storageBucket: 'remindra-bc8e5.firebasestorage.app',
     iosBundleId: 'net.tomascichero.birthdayremainder',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyAeBgJIii0PJ6z0kaRHYKlxJ6Y2pBqq25Y',
-    appId: '1:1018512304007:ios:a49fafd06ee38b9c6b5522',
-    messagingSenderId: '1018512304007',
-    projectId: 'birthday-remainder-app',
-    databaseURL: 'https://birthday-remainder-app.firebaseio.com',
-    storageBucket: 'birthday-remainder-app.appspot.com',
-    androidClientId: '1018512304007-37g6mopnqacg7hsedrd7monil2rgjb6k.apps.googleusercontent.com',
-    iosClientId: '1018512304007-60mk697phbofj0skvubs5banqdik6ph8.apps.googleusercontent.com',
+    apiKey: 'AIzaSyCLXwoy-RDudEAQeJCF-kRhv7uHVyly-p4',
+    appId: '1:1006967606:ios:9859c61bb5548458557197',
+    messagingSenderId: '1006967606',
+    projectId: 'remindra-bc8e5',
+    storageBucket: 'remindra-bc8e5.firebasestorage.app',
     iosBundleId: 'net.tomascichero.birthdayremainder',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyCEhq6sfilD8ln359byGMbrUy2R6pMRy2E',
-    appId: '1:1018512304007:web:07c39be5187c82186b5522',
-    messagingSenderId: '1018512304007',
-    projectId: 'birthday-remainder-app',
-    authDomain: 'birthday-remainder-app.firebaseapp.com',
-    databaseURL: 'https://birthday-remainder-app.firebaseio.com',
-    storageBucket: 'birthday-remainder-app.appspot.com',
-    measurementId: 'G-RGVSGSXNRD',
+    apiKey: 'AIzaSyAbPG_N-iU15OQVybYtqPxy5mK7cBaUxBU',
+    appId: '1:1006967606:web:5f624ab4fb0558de557197',
+    messagingSenderId: '1006967606',
+    projectId: 'remindra-bc8e5',
+    authDomain: 'remindra-bc8e5.firebaseapp.com',
+    storageBucket: 'remindra-bc8e5.firebasestorage.app',
+    measurementId: 'G-6EYTWTCW55',
   );
+
 }

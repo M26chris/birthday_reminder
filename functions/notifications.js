@@ -1,239 +1,131 @@
-
 const functions = require("firebase-functions");
 const firebase = require("firebase-admin");
 
-const firestore = firebase.firestore()
+const firestore = firebase.firestore();
 
+/**
+ * Main notification function – runs every hour.
+ *
+ * For each user with push notifications enabled:
+ *   1. Computes their local hour from their stored UTC timezone offset.
+ *   2. Finds birthdays whose notif_hour matches the user's current local hour.
+ *   3. Sends a push notification if the birthday is TODAY or exactly 7 days away.
+ *
+ * NOTE: push notifications fire at the correct hour (whole-hour precision).
+ *       Local (on-device) notifications respect the exact minute chosen by the user.
+ */
 module.exports.notificationsFunction = async function notificationsFunction() {
-    const config = await getConfig()
+    const utcHour = new Date().getUTCHours();
 
-    for await (const { users, option, timezone } of getAllCurentUsers(config)) {
-        for (const user of users) {
+    // Get all tokens that have notifications turned on
+    const tokensSnapshot = await firestore
+        .collection("fcm_tokens")
+        .where("enable_notifications", "==", true)
+        .get();
 
-            if (user.enable_notifications === false) {
-                continue
-            }
+    const users = tokensSnapshot.docs.map(doc => ({
+        token: doc.id,
+        ...doc.data(),
+    }));
 
-            const snapshot = await firestore.collection("birthdays").where('owner', '==', user.user_id).get()
-            const birthdays = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    for (const user of users) {
+        // Convert UTC hour to the user's local hour
+        const timezone = user.timezone ?? 0; // stored as integer UTC offset
+        const localHour = (utcHour + timezone + 24) % 24;
 
-            const authedUser = await firebase.auth().getUser(user.user_id)
+        // Fetch all birthdays belonging to this user
+        const birthdaysSnapshot = await firestore
+            .collection("birthdays")
+            .where("owner", "==", user.user_id)
+            .get();
 
-            for (const birthday of birthdays) {
-                let date = birthday['birth'].toDate()
+        for (const doc of birthdaysSnapshot.docs) {
+            const birthday = { id: doc.id, ...doc.data() };
 
-                const offset = (timezone * 60 * 60 * 1000)
+            // Default notification hour is 9 AM if the birthday has no stored preference
+            const notifHour = birthday.notif_hour ?? 9;
 
-                date = new Date(date.getTime() + offset)
-                const today = new Date(Date.now() + offset)
+            // Only fire when the user's local hour matches this birthday's chosen hour
+            if (localHour !== notifHour) continue;
 
-                const day = date.getDate()
-                const month = date.getMonth() + 1
-                const year = date.getFullYear()
+            // Compute the local date for this user
+            const offsetMs = timezone * 60 * 60 * 1000;
+            const localNow = new Date(Date.now() + offsetMs);
 
-                const todayDay = today.getDate()
-                const todayMonth = today.getMonth() + 1
+            const bDate = birthday.birth.toDate();
+            const bMonth = bDate.getMonth() + 1;
+            const bDay = bDate.getDate();
 
-                const future7Days = new Date()
-                future7Days.setDate(future7Days.getDate() + 7)
-                const future7DaysDay = future7Days.getDate()
-                const future7DaysMonth = future7Days.getMonth() + 1
+            const todayMonth = localNow.getMonth() + 1;
+            const todayDay = localNow.getDate();
 
-                const isSameDay = todayDay === day && todayMonth === month
-                const isSameDay7Days = future7DaysDay === day && future7DaysMonth === month
+            const in7Days = new Date(localNow.getTime() + 7 * 24 * 60 * 60 * 1000);
+            const in7Month = in7Days.getMonth() + 1;
+            const in7Day = in7Days.getDate();
 
-                if (isSameDay) {
-                    functions.logger.info(`Sent notification to "${authedUser.displayName} <${authedUser.email}>. Birthday id: ${birthday.id}, (${birthday.personName})"`, { structuredData: true });
-                    sendNotification(birthday, user)
-                }
+            const isToday = todayDay === bDay && todayMonth === bMonth;
+            const isSeven = in7Day === bDay && in7Month === bMonth;
 
-                if (isSameDay7Days) {
-                    functions.logger.info(`Sent notification to "${authedUser.displayName} <${authedUser.email}>. Birthday id: ${birthday.id}, (${birthday.personName})"`, { structuredData: true });
-                    sendNotification(birthday, user, true)
-                }
+            if (!isToday && !isSeven) continue;
+
+            try {
+                const authedUser = await firebase.auth().getUser(user.user_id);
+                functions.logger.info(
+                    `Sending notification to "${authedUser.displayName} <${authedUser.email}>". ` +
+                    `Birthday: ${birthday.personName} (id: ${birthday.id})`,
+                    { structuredData: true }
+                );
+                await sendNotification(birthday, user, isSeven && !isToday);
+            } catch (err) {
+                functions.logger.error(`Failed to send for ${birthday.personName}: ${err.message}`);
             }
         }
     }
-}
+};
 
+/**
+ * Build and dispatch the FCM push notification (English only).
+ *
+ * @param {object}  birthday  - Firestore birthday document data
+ * @param {object}  user      - FCM token document data
+ * @param {boolean} isFuture  - true = 7-day heads-up, false = birthday is today
+ */
 async function sendNotification(birthday, user, isFuture = false) {
-    const noYear = !!birthday.noYear
-    const year = birthday.birth.toDate().getFullYear()
+    const name = birthday.personName;
+    const noYear = !!birthday.noYear;
+    const year = birthday.birth.toDate().getFullYear();
+    const turnsAge = new Date().getFullYear() - year;
 
-    const name = birthday.personName
-
-    const turns = new Date().getFullYear() - year
-
-    let title = ''
-
+    let title;
     if (noYear) {
-        title = !isFuture ? `Today is the birthday of ${name}` : `In 7 days is the birthday of ${name}`
+        title = isFuture
+            ? `🎂 ${name}'s birthday is in 7 days!`
+            : `🎂 Today is ${name}'s birthday!`;
     } else {
-        title = !isFuture ? `Today ${name} turns ${turns}` : `In 7 days ${name} turns ${turns}`
+        title = isFuture
+            ? `🎂 ${name} turns ${turnsAge} in 7 days!`
+            : `🎂 Happy birthday ${name}! They turn ${turnsAge} today!`;
     }
 
-    if (user.lang === 'es') {
-        if (noYear) {
-            title = !isFuture ? `Hoy es el cumpleaños de ${name}` : `En 7 días es el cumpleaños de ${name}`
-        } else {
-            title = !isFuture ? `Hoy ${name} cumple ${turns}` : `En 7 días ${name} cumple ${turns}`
-        }
-    }
+    const dateStr = birthday.birth.toDate().toLocaleDateString("en", {
+        day: "numeric",
+        month: "long",
+    });
+    const body = (birthday.notes ? `(${birthday.notes}) ` : "") + dateStr;
 
-    // Show day and month
-    const description = (birthday.notes ? `(${birthday.notes}) ` : '') + birthday.birth.toDate().toLocaleDateString(user.lang, { day: 'numeric', month: 'long' })
-
-    return await firebase.messaging().send({
-        "token": user.token,
-        "notification": {
-            "title": title,
-            "body": description,
+    return firebase.messaging().send({
+        token: user.token,
+        notification: {
+            title,
+            body,
         },
-        "webpush": {
-            "fcmOptions": {
-                "link": `https://birthday-remainder-app.web.app/app/#/?birthday=${encodeURIComponent(birthday.id)}`,
+        webpush: {
+            fcmOptions: {
+                link: `https://birthday-remainder-app.web.app/app/#/?birthday=${encodeURIComponent(birthday.id)}`,
             },
         },
-        "data": {
-            "birthday_id": birthday.id,
-        }
-    })
-}
-
-
-async function getConfig() {
-    const template = await firebase.remoteConfig().getTemplate()
-
-    /** @type {string[]} */
-    const updateTimes = JSON.parse(template.parameters['daily_update_time'].defaultValue.value)
-    /** @type {string} */
-    const defaultTime = template.parameters['default_daily_update_time'].defaultValue.value
-
-    return {
-        updateTimes,
-        defaultTime,
-    }
-}
-
-/** 
- * @param {string} option
- * @param {number} config
- * @param {ReturnType<typeof getConfig>} config
- *  */
-async function getUsers(option, timezone, config) {
-    const registrations = (await firestore.collection("fcm_tokens").where('daily_update_time', '==', option).where('timezone', '==', timezone).get()).docs.map(doc => ({
-        token: doc.id,
-        ...doc.data()
-    }))
-
-    if (option === config.defaultTime) {
-        let usersWithDefaultTime = (await firestore.collection("fcm_tokens").where('timezone', '==', timezone).get()).docs.map(doc => ({
-            token: doc.id,
-            ...doc.data()
-        }))
-
-        // Only users with default time, that means, users that have not set a daily_update_time
-        usersWithDefaultTime = usersWithDefaultTime.filter(user => !user.daily_update_time)
-
-        registrations.push(...usersWithDefaultTime)
-    }
-
-    /** @type {{ token: string, lang: string, platform: string, timezone: number, daily_update_time: string | undefined, enable_notifications: boolean, updated_at: any, user_id: string }[]} */
-    const users = registrations
-
-    return users
-}
-
-/** @param {ReturnType<typeof getConfig>} config */
-async function getCurrentOption(config) {
-    const utc0 = new Date()
-    const hours = utc0.getHours()
-    const minutes = utc0.getMinutes()
-    const seconds = utc0.getSeconds()
-
-    let currentTimeOption = {
-        hour: hours,
-        minute: minutes,
-        second: seconds,
-    }
-
-    for (const configTime of config.updateTimes) {
-        const [configHour, configMinute, configSecond] = configTime.split(':').map(Number)
-
-        if (hours > configHour || (hours === configHour && minutes > configMinute) || (hours === configHour && minutes === configMinute && seconds >= configSecond)) {
-            currentTimeOption = {
-                hour: configHour,
-                minute: configMinute,
-                second: configSecond,
-            }
-        }
-    }
-
-    return currentTimeOption
-}
-
-
-async function* getAllCurentUsers(config) {
-    const timezoneOptionCombinations = await getCurrentOptionTimezoneCombinations(config)
-
-    /** @type {{ option: string, timezone: number, users: { token: string, lang: string, platform: string, timezone: number, daily_update_time: string | undefined, enable_notifications: boolean, updated_at: any, user_id: string }[] }[]} */
-    const usersByOption = []
-
-    for (const timezoneOptionCombination of timezoneOptionCombinations) {
-        const users = await getUsers(timezoneOptionCombination.option, timezoneOptionCombination.timezone, config)
-
-        yield {
-            ...timezoneOptionCombination,
-            users,
-        }
-    }
-
-    return usersByOption
-}
-
-/** @param {ReturnType<typeof getConfig>} config */
-async function getCurrentOptionTimezoneCombinations(config) {
-    const currentOption = await getCurrentOption(config)
-
-
-    /** @type {{ option: string, timezone: number }[]} */
-    const timezoneOptionCombinations = []
-
-    for (let timezone = -12; timezone <= 14; timezone++) {
-        timezoneOptionCombinations.push({
-            option: formatLabel({
-                hour: (currentOption.hour + timezone + 24) % 24,
-                minute: currentOption.minute,
-                second: currentOption.second,
-            }),
-            timezone,
-        })
-    }
-
-    return timezoneOptionCombinations
-}
-
-/** @type {{ hour: number, minute: number, second: number }} */
-function formatLabel(option) {
-    let hourStr = option.hour.toString()
-    let minuteStr = option.minute.toString()
-    let secondStr = option.second.toString()
-
-    if (hourStr.length === 1) {
-        hourStr = '0' + hourStr
-    }
-
-    if (minuteStr.length === 1) {
-        minuteStr = '0' + minuteStr
-    }
-
-    if (secondStr.length === 1) {
-        secondStr = '0' + secondStr
-    }
-
-    if (secondStr === '00') {
-        return `${hourStr}:${minuteStr}`
-    }
-
-    return `${hourStr}:${minuteStr}:${secondStr}`
+        data: {
+            birthday_id: birthday.id,
+        },
+    });
 }

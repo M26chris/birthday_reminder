@@ -6,6 +6,8 @@ class Birthday {
   final DateTime birth;
   final String notes;
   final bool noYear;
+  final int notificationHour;   // per-birthday notification hour (0–23)
+  final int notificationMinute; // per-birthday notification minute (0–59)
 
   Birthday({
     required this.id,
@@ -13,11 +15,14 @@ class Birthday {
     required this.birth,
     required this.notes,
     required this.noYear,
+    this.notificationHour = 9,
+    this.notificationMinute = 0,
   });
 
   @override
   String toString() {
-    return "Bithday(personName: $personName, birth: $birth, notes: $notes, noYear: $noYear)";
+    return 'Birthday(personName: $personName, birth: $birth, notes: $notes, '
+        'noYear: $noYear, notifTime: $notificationHour:${notificationMinute.toString().padLeft(2, '0')})';
   }
 
   Birthday copyWith({
@@ -26,6 +31,8 @@ class Birthday {
     DateTime? birth,
     String? notes,
     bool? noYear,
+    int? notificationHour,
+    int? notificationMinute,
   }) {
     return Birthday(
       id: id ?? this.id,
@@ -33,6 +40,8 @@ class Birthday {
       birth: birth ?? this.birth,
       notes: notes ?? this.notes,
       noYear: noYear ?? this.noYear,
+      notificationHour: notificationHour ?? this.notificationHour,
+      notificationMinute: notificationMinute ?? this.notificationMinute,
     );
   }
 
@@ -44,7 +53,6 @@ class Birthday {
     }
 
     final rawBirth = map['birth'];
-
     DateTime birth;
 
     if (rawBirth is DateTime) {
@@ -61,50 +69,11 @@ class Birthday {
       id: useId,
       personName: map['personName'] as String,
       birth: birth,
-      notes: map['notes'] as String,
+      notes: map['notes'] as String? ?? '',
       noYear: map['noYear'] as bool? ?? false,
+      notificationHour: map['notif_hour'] as int? ?? 9,
+      notificationMinute: map['notif_minute'] as int? ?? 0,
     );
-  }
-
-  DateTime nextBirthday({DateTime? from}) {
-    final now = from ?? DateTime.now().copyWith(hour: 0, minute: 0, second: 0, millisecond: 0);
-
-    if (now.month == birth.month && now.day == birth.day) {
-      return now;
-    }
-
-    final thisYear = now.year;
-
-    final nextBirthday = DateTime(
-      thisYear,
-      birth.month,
-      birth.day,
-    );
-
-    if (nextBirthday.isBefore(now)) {
-      return DateTime(
-        thisYear + 1,
-        birth.month,
-        birth.day,
-      );
-    }
-
-    return nextBirthday;
-  }
-
-  Duration durationToNextBirthday({DateTime? from}) {
-    final now = from ?? DateTime.now();
-
-    return nextBirthday(from: from).difference(now);
-  }
-
-  int? nextAge({DateTime? from}) {
-    if (noYear) return null;
-
-    final bornYear = birth.year;
-    final nextYear = nextBirthday(from: from).year;
-
-    return nextYear - bornYear;
   }
 
   Map<String, dynamic> toMap() {
@@ -113,6 +82,39 @@ class Birthday {
       'birth': birth,
       'notes': notes,
       'noYear': noYear,
+      'notif_hour': notificationHour,
+      'notif_minute': notificationMinute,
     };
+  }
+
+  DateTime nextBirthday({DateTime? from}) {
+    final now = from ??
+        DateTime.now()
+            .copyWith(hour: 0, minute: 0, second: 0, millisecond: 0);
+
+    if (now.month == birth.month && now.day == birth.day) {
+      return now;
+    }
+
+    final thisYear = now.year;
+    final nextBday = DateTime(thisYear, birth.month, birth.day);
+
+    if (nextBday.isBefore(now)) {
+      return DateTime(thisYear + 1, birth.month, birth.day);
+    }
+
+    return nextBday;
+  }
+
+  Duration durationToNextBirthday({DateTime? from}) {
+    final now = from ?? DateTime.now();
+    return nextBirthday(from: from).difference(now);
+  }
+
+  int? nextAge({DateTime? from}) {
+    if (noYear) return null;
+    final bornYear = birth.year;
+    final nextYear = nextBirthday(from: from).year;
+    return nextYear - bornYear;
   }
 }

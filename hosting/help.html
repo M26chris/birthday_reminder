@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Help &amp; Support · Remindra</title>
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --purple-deep: #6A1B9A;
+      --purple-light: #9C27B0;
+      --gold: #FFC107;
+      --bg: #FAF7FF;
+      --card: #FFFFFF;
+      --text: #212121;
+      --text-muted: #616161;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh;
+    }
+    nav {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 32px; background: var(--purple-deep);
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-brand img { width: 30px; height: 30px; border-radius: 8px; }
+    .nav-brand span { font-size: 18px; font-weight: 700; color: white; letter-spacing: 1px; }
+    .nav-links { display: flex; gap: 6px; }
+    .nav-links a {
+      color: rgba(255,255,255,0.8); text-decoration: none;
+      font-size: 13px; padding: 5px 12px; border-radius: 20px; transition: background 0.2s;
+    }
+    .nav-links a:hover { background: rgba(255,255,255,0.15); color: white; }
+
+    .page-header {
+      background: linear-gradient(135deg, var(--purple-deep), var(--purple-light));
+      color: white; padding: 48px 24px 56px; text-align: center;
+    }
+    .page-header h1 { font-size: clamp(28px, 5vw, 42px); font-weight: 800; }
+    .page-header p { opacity: 0.8; margin-top: 8px; font-size: 15px; }
+
+    .content-wrap { max-width: 780px; margin: -28px auto 60px; padding: 0 20px; }
+
+    .card {
+      background: var(--card); border-radius: 20px; padding: 40px;
+      box-shadow: 0 8px 40px rgba(106,27,154,0.1); margin-bottom: 24px;
+    }
+    @media (max-width: 600px) { .card { padding: 24px 18px; } }
+
+    .card h2 {
+      font-size: 20px; font-weight: 700; color: var(--purple-deep);
+      margin-bottom: 20px; display: flex; align-items: center; gap: 10px;
+    }
+    .card h2 .icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--purple-deep), var(--purple-light));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+
+    /* FAQ */
+    .faq-item { border-bottom: 1px solid rgba(106,27,154,0.08); padding: 16px 0; }
+    .faq-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .faq-q {
+      font-weight: 600; font-size: 15px; color: var(--text);
+      cursor: pointer; display: flex; justify-content: space-between;
+      align-items: flex-start; gap: 12px; list-style: none;
+    }
+    .faq-q::after { content: '＋'; color: var(--purple-deep); font-size: 18px; flex-shrink: 0; }
+    details[open] .faq-q::after { content: '－'; }
+    .faq-a { margin-top: 10px; font-size: 14px; color: var(--text-muted); line-height: 1.7; }
+    .faq-a a { color: var(--purple-deep); }
+
+    /* Contact */
+    .contact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+    .contact-card {
+      border: 2px solid rgba(106,27,154,0.12); border-radius: 14px;
+      padding: 20px; text-align: center; text-decoration: none;
+      color: var(--text); transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .contact-card:hover {
+      border-color: var(--purple-light);
+      box-shadow: 0 4px 20px rgba(106,27,154,0.12);
+    }
+    .contact-card .c-icon { font-size: 32px; margin-bottom: 10px; }
+    .contact-card h3 { font-size: 15px; font-weight: 700; color: var(--purple-deep); margin-bottom: 4px; }
+    .contact-card p { font-size: 13px; color: var(--text-muted); }
+
+    footer {
+      background: var(--purple-deep); color: rgba(255,255,255,0.7);
+      text-align: center; padding: 28px 16px; font-size: 13px;
+    }
+    footer a { color: var(--gold); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a class="nav-brand" href="/">
+      <img src="/favicon.png" alt="Remindra" />
+      <span>Remindra</span>
+    </a>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/privacy-policy">Privacy</a>
+      <a href="/terms-of-use">Terms</a>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <h1>Help &amp; Support</h1>
+    <p>Answers to common questions, and ways to reach us.</p>
+  </div>
+
+  <div class="content-wrap">
+
+    <!-- FAQ -->
+    <div class="card">
+      <h2><span class="icon">❓</span> Frequently Asked Questions</h2>
+
+      <details class="faq-item">
+        <summary class="faq-q">Why am I not receiving birthday notifications?</summary>
+        <div class="faq-a">
+          Make sure notifications are enabled in Settings → Notifications inside Remindra.
+          Also check that your phone's battery saver or Do Not Disturb mode isn't blocking
+          the app. On Android 13+, you may need to grant the POST_NOTIFICATIONS permission
+          manually in your phone's App Settings.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-q">The notification sound isn't playing. How do I fix it?</summary>
+        <div class="faq-a">
+          Android permanently caches a notification channel's sound when the app is first
+          installed. If you installed Remindra before the sound was added, you need to
+          <strong>fully uninstall</strong> the app and reinstall it. This forces Android
+          to create a fresh notification channel with the birthday sound attached.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-q">Can I set different notification times for each birthday?</summary>
+        <div class="faq-a">
+          Yes! When you add or edit a birthday, tap the <strong>"Notification time"</strong>
+          field to pick exactly when you want to be reminded for that specific person.
+          Each birthday has its own independent notification time.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-q">My notification was late. Why?</summary>
+        <div class="faq-a">
+          On some Android devices (especially Samsung), aggressive battery optimisation can
+          delay alarms. Go to your phone's Settings → Apps → Remindra → Battery → and set
+          it to <strong>"Unrestricted"</strong>. Also disable battery saver for the app.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-q">How do I delete my account and all my data?</summary>
+        <div class="faq-a">
+          Open Remindra → Settings → Account → "Delete all my data". This will open a
+          pre-filled email to our support team at
+          <a href="mailto:support.remindra@gmail.com">support.remindra@gmail.com</a>.
+          We will delete your account and all associated data within 7 business days.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-q">Will Remindra remind me in advance, not just on the day?</summary>
+        <div class="faq-a">
+          Yes. Remindra sends a push notification exactly 7 days before each birthday as a
+          heads-up, plus a second notification on the birthday itself at the time you chose.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-q">I forgot to sign in with Google. Can I use a different account?</summary>
+        <div class="faq-a">
+          Currently Remindra supports Google Sign-In only. Sign out from Settings and sign
+          back in with any Google account. More login options are coming in a future update.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-q">Is Remindra free?</summary>
+        <div class="faq-a">
+          Yes, Remindra is completely free. There are no ads, no subscriptions, and no
+          hidden charges. We don't sell your data to third parties.
+        </div>
+      </details>
+
+    </div>
+
+    <!-- Contact -->
+    <div class="card">
+      <h2><span class="icon">✉️</span> Get in Touch</h2>
+      <p style="color:var(--text-muted);font-size:14px;margin-bottom:20px;line-height:1.6;">
+        Can't find what you're looking for? We're happy to help.
+        Reach out and we'll get back to you within 3 business days.
+      </p>
+      <div class="contact-grid">
+        <a class="contact-card" href="mailto:support.remindra@gmail.com?subject=Remindra%20Support&body=Hi%2C%20I%20need%20help%20with%20Remindra.%0A%0AIssue%3A%0A">
+          <div class="c-icon">📧</div>
+          <h3>Email Support</h3>
+          <p>support.remindra@gmail.com</p>
+        </a>
+        <a class="contact-card" href="mailto:support.remindra@gmail.com?subject=Remindra%20Bug%20Report&body=Hi%2C%20I%20found%20a%20bug%20in%20Remindra.%0A%0ADescription%3A%0A%0ASteps%20to%20reproduce%3A%0A%0ADevice%3A%0A">
+          <div class="c-icon">🐛</div>
+          <h3>Report a Bug</h3>
+          <p>Help us improve Remindra</p>
+        </a>
+        <a class="contact-card" href="mailto:support.remindra@gmail.com?subject=Remindra%20Feature%20Request&body=Hi%2C%20I%20have%20a%20feature%20idea%20for%20Remindra%3A%0A%0A">
+          <div class="c-icon">💡</div>
+          <h3>Feature Request</h3>
+          <p>Share your ideas with us</p>
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    &copy; 2026 Remindra &nbsp;·&nbsp;
+    <a href="/privacy-policy">Privacy Policy</a> &nbsp;·&nbsp;
+    <a href="/terms-of-use">Terms of Use</a>
+  </footer>
+
+</body>
+</html>

@@ -1,6 +1,6 @@
 import 'package:birthday_reminder/data.dart';
 import 'package:birthday_reminder/helpers/birthday.dart';
-import 'package:birthday_reminder/widgets/birthday_card.dart';
+import 'package:birthday_reminder/widgets/birthday_card_enhanced.dart';
 import 'package:flutter/material.dart';
 
 class BirthdaysListView extends StatefulWidget {
@@ -56,7 +56,7 @@ class _BirthdaysListViewState extends State<BirthdaysListView> {
 
             final birthday = filteredBirthdays[birthdayIndex];
 
-            return BirthdayCard(birthday: birthday);
+            return EnhancedBirthdayCard(birthday: birthday);
           },
         );
       },

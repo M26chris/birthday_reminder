@@ -1,5 +1,6 @@
 import 'package:birthday_reminder/data.dart';
 import 'package:birthday_reminder/helpers/birthday.dart';
+import 'package:birthday_reminder/helpers/birthday_notification.dart';
 import 'package:birthday_reminder/layouts/birthday_form_view.dart';
 import 'package:birthday_reminder/layouts/birthdays_list_view.dart';
 import 'package:birthday_reminder/layouts/settings_page.dart';
@@ -31,8 +32,11 @@ class _HomeState extends State<Home> {
     month: DateTime.now().month,
     year: 0,
     notes: '',
+    notificationHour: 9,
+    notificationMinute: 0,
   );
 
+  /// Save birthday to Firestore and schedule local notification
   Future<void> saveBirthday() async {
     final date = DateTime(
       addBirthdayData.year == 0 ? 2000 : addBirthdayData.year,
@@ -40,10 +44,10 @@ class _HomeState extends State<Home> {
       addBirthdayData.day,
     );
 
-    if (date.month != addBirthdayData.month) {
-      return;
-    }
+    // Validate date
+    if (date.month != addBirthdayData.month) return;
 
+    // Validate name
     if (addBirthdayData.name.trim() == '') return;
 
     setState(() {
@@ -54,17 +58,34 @@ class _HomeState extends State<Home> {
     final strings = appStrings(context);
 
     try {
-      await FirebaseFirestore.instance.collection('birthdays').add({
-        "birth": date,
-        "noYear": addBirthdayData.year == 0,
-        "notes": addBirthdayData.notes,
-        "owner": FirebaseAuth.instance.currentUser!.uid,
-        "personName": addBirthdayData.name,
-        "app_version": "2.0.0",
-        "created_at": DateTime.now(),
-        "updated_at": DateTime.now(),
+      final docRef =
+          await FirebaseFirestore.instance.collection('birthdays').add({
+        'birth': date,
+        'noYear': addBirthdayData.year == 0,
+        'notes': addBirthdayData.notes,
+        'owner': FirebaseAuth.instance.currentUser!.uid,
+        'personName': addBirthdayData.name,
+        'notif_hour': addBirthdayData.notificationHour,
+        'notif_minute': addBirthdayData.notificationMinute,
+        'app_version': '2.0.0',
+        'created_at': DateTime.now(),
+        'updated_at': DateTime.now(),
       });
 
+      // Build the Birthday object and schedule its local notification
+      final birthday = Birthday(
+        id: docRef.id,
+        personName: addBirthdayData.name,
+        birth: date,
+        noYear: addBirthdayData.year == 0,
+        notes: addBirthdayData.notes,
+        notificationHour: addBirthdayData.notificationHour,
+        notificationMinute: addBirthdayData.notificationMinute,
+      );
+
+      await BirthdayNotificationManager().scheduleBirthdayNotification(birthday);
+
+      // Reset form
       setState(() {
         addBirthdayData = BirthdayFormData(
           name: '',
@@ -72,10 +93,13 @@ class _HomeState extends State<Home> {
           month: DateTime.now().month,
           year: 0,
           notes: '',
+          notificationHour: 9,
+          notificationMinute: 0,
         );
       });
     } catch (e) {
       if (kDebugMode) print(e);
+
       confirm(
         context,
         onInput: (result) {
@@ -86,7 +110,7 @@ class _HomeState extends State<Home> {
           });
         },
         title: Text(strings.error_ocurred),
-        content: Text(strings.failed_to_save + (kDebugMode ? "\n$e" : "")),
+        content: Text(strings.failed_to_save + (kDebugMode ? '\n$e' : '')),
       ).then((value) {
         if (!value) return;
         setState(() {
@@ -99,8 +123,8 @@ class _HomeState extends State<Home> {
 
   @override
   void initState() {
-    stream = getBirthdaysStream();
     super.initState();
+    stream = getBirthdaysStream();
   }
 
   @override
@@ -109,7 +133,7 @@ class _HomeState extends State<Home> {
     final currentIndex = indexes.last;
 
     Widget body = BirthdaysListView(
-      insertChildren: filter == "" ? [const RequestNotificationCard()] : [],
+      insertChildren: filter == '' ? [const RequestNotificationCard()] : [],
       filter: filter,
       stream: stream,
     );
@@ -171,22 +195,24 @@ class _HomeState extends State<Home> {
           elevation: 3.0,
           onDestinationSelected: (int destinationIndex) {
             if (currentIndex == destinationIndex) return;
-
             setState(() {
               indexes.add(destinationIndex);
             });
           },
           destinations: [
             NavigationDestination(
-              icon: const Icon(Icons.list),
+              icon: const Icon(Icons.cake_outlined),
+              selectedIcon: const Icon(Icons.cake),
               label: strings.birthdays,
             ),
             NavigationDestination(
-              icon: const Icon(Icons.add),
+              icon: const Icon(Icons.add_circle_outline),
+              selectedIcon: const Icon(Icons.add_circle),
               label: strings.add,
             ),
             NavigationDestination(
-              icon: const Icon(Icons.settings),
+              icon: const Icon(Icons.settings_outlined),
+              selectedIcon: const Icon(Icons.settings),
               label: strings.settings,
             ),
           ],
@@ -196,47 +222,3 @@ class _HomeState extends State<Home> {
     );
   }
 }
-
-
-
-// ends StatelessWidget {
-//   const Home({super.key});
-
-//   @override
-//   Widget build(Object context) {
-//     return Scaffold(
-//       appBar: AppBar(),
-//       body: StreamBuilder(
-//         stream: FirebaseFirestore.instance
-//             .collection('birthdays')
-//             .where('owner', isEqualTo: FirebaseAuth.instance.currentUser?.uid)
-//             .snapshots(),
-//         builder: (context, snapshot) {
-//           final birthdays = snapshot.data?.docs.map((e) => e.data()).toList();
-
-//           if (snapshot.hasError) {
-//             return Text("ERROR");
-//           }
-
-//           if (birthdays == null) {
-//             return Text("LOADING");
-//           }
-
-//           return ListView.builder(
-//             itemCount: birthdays.length,
-//             itemBuilder: (context, index) {
-//               return Padding(
-//                 padding: EdgeInsets.all(10),
-//                 child: Card(
-//                     child: Padding(
-//                   padding: EdgeInsets.all(20),
-//                   child: Text(birthdays[index]['personName']),
-//                 )),
-//               );
-//             },
-//           );
-//         },
-//       ),
-//     );
-//   }
-// }

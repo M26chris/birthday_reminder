@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Remindra — Moments made timeless. The birthday reminder app that never lets you forget." />
+  <title>Remindra · Moments made timeless</title>
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --purple-deep: #6A1B9A;
+      --purple-light: #9C27B0;
+      --gold: #FFC107;
+      --amber: #FF9800;
+      --bg: #FAF7FF;
+      --card: #FFFFFF;
+      --text: #212121;
+      --text-muted: #757575;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 32px;
+      background: var(--purple-deep);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .nav-brand img { width: 32px; height: 32px; border-radius: 8px; }
+    .nav-brand span {
+      font-size: 20px;
+      font-weight: 700;
+      color: white;
+      letter-spacing: 1px;
+    }
+    .nav-links { display: flex; gap: 8px; }
+    .nav-links a {
+      color: rgba(255,255,255,0.85);
+      text-decoration: none;
+      font-size: 14px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      transition: background 0.2s;
+    }
+    .nav-links a:hover { background: rgba(255,255,255,0.15); color: white; }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, var(--purple-deep) 0%, var(--purple-light) 60%, #CE93D8 100%);
+      color: white;
+      text-align: center;
+      padding: 80px 24px 100px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 300px; height: 300px;
+      background: rgba(255,193,7,0.12);
+      border-radius: 50%;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; left: -40px;
+      width: 250px; height: 250px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 50%;
+    }
+    .hero-logo {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 24px;
+      border-radius: 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      position: relative;
+      z-index: 1;
+    }
+    .hero h1 {
+      font-size: clamp(36px, 6vw, 64px);
+      font-weight: 800;
+      letter-spacing: 2px;
+      position: relative;
+      z-index: 1;
+    }
+    .hero h1 span { color: var(--gold); }
+    .hero p {
+      font-size: clamp(16px, 2.5vw, 22px);
+      opacity: 0.9;
+      margin: 16px 0 40px;
+      font-style: italic;
+      position: relative;
+      z-index: 1;
+    }
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--gold);
+      color: #212121;
+      font-weight: 700;
+      font-size: 16px;
+      padding: 14px 32px;
+      border-radius: 50px;
+      text-decoration: none;
+      box-shadow: 0 8px 30px rgba(255,193,7,0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+      z-index: 1;
+    }
+    .hero-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(255,193,7,0.5); }
+
+    /* ── FEATURES ── */
+    .section { padding: 72px 24px; max-width: 1000px; margin: 0 auto; }
+    .section-title {
+      text-align: center;
+      font-size: clamp(24px, 4vw, 36px);
+      font-weight: 700;
+      color: var(--purple-deep);
+      margin-bottom: 48px;
+    }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+    }
+    .feature-card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 32px 24px;
+      box-shadow: 0 4px 24px rgba(106,27,154,0.08);
+      border: 1px solid rgba(106,27,154,0.08);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .feature-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(106,27,154,0.14); }
+    .feature-icon {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, var(--purple-deep), var(--purple-light));
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+    .feature-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; color: var(--purple-deep); }
+    .feature-card p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+
+    /* ── DIVIDER ── */
+    .divider {
+      height: 4px;
+      background: linear-gradient(90deg, var(--purple-deep), var(--gold), var(--purple-light));
+      border-radius: 2px;
+      margin: 0 24px;
+      opacity: 0.3;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--purple-deep);
+      color: rgba(255,255,255,0.75);
+      padding: 40px 24px;
+      text-align: center;
+    }
+    footer .footer-brand {
+      font-size: 22px;
+      font-weight: 700;
+      color: white;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+    footer .footer-slogan { font-style: italic; margin-bottom: 24px; font-size: 14px; }
+    footer .footer-links {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 6px 20px;
+      margin-bottom: 24px;
+    }
+    footer .footer-links a {
+      color: rgba(255,255,255,0.75);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+    footer .footer-links a:hover { color: var(--gold); }
+    footer .footer-copy { font-size: 12px; opacity: 0.5; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a class="nav-brand" href="/">
+      <img src="/favicon.png" alt="Remindra" />
+      <span>Remindra</span>
+    </a>
+    <div class="nav-links">
+      <a href="/privacy-policy">Privacy</a>
+      <a href="/terms-of-use">Terms</a>
+      <a href="/help">Help</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <img class="hero-logo" src="/favicon.png" alt="Remindra logo" />
+    <h1><span>Remindra</span></h1>
+    <p>Moments made timeless.</p>
+    <a class="hero-cta" href="https://play.google.com/store/apps/details?id=com.example.birthday_reminder">
+      🎂 Get the App
+    </a>
+  </section>
+
+  <!-- FEATURES -->
+  <div class="section">
+    <h2 class="section-title">Never miss a birthday again</h2>
+    <div class="features">
+      <div class="feature-card">
+        <div class="feature-icon">🔔</div>
+        <h3>Smart Reminders</h3>
+        <p>Set a custom notification time for each birthday. Get reminded exactly when you want — no one-size-fits-all approach.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎵</div>
+        <h3>Birthday Sound</h3>
+        <p>Remindra plays a celebratory sound when a birthday notification fires, so you never confuse it with ordinary alerts.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">☁️</div>
+        <h3>Synced Everywhere</h3>
+        <p>Your birthdays are securely stored in the cloud. Sign in on any device and your list is always up to date.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🌙</div>
+        <h3>Light & Dark Mode</h3>
+        <p>Remindra automatically follows your system theme — beautiful in both light and dark environments.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3>Private by Design</h3>
+        <p>Your data is yours. We never sell or share it. You can delete your account and all your data at any time.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎂</div>
+        <h3>7-Day Heads-Up</h3>
+        <p>Get notified a week before each birthday so you have time to plan something special.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <footer>
+    <div class="footer-brand">Remindra</div>
+    <div class="footer-slogan">Because every year counts.</div>
+    <div class="footer-links">
+      <a href="/privacy-policy">Privacy Policy</a>
+      <a href="/terms-of-use">Terms of Use</a>
+      <a href="/help">Help &amp; Contact</a>
+    </div>
+    <div class="footer-copy">&copy; 2026 Remindra. All rights reserved.</div>
+  </footer>
+
+</body>
+</html>

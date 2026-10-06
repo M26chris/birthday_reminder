@@ -38,9 +38,9 @@ void showConfirmDialog(
               onInput(true);
             },
             destinations: [
-              if (!acceptOnly) const NavigationDestination(icon: Icon(Icons.close), label: 'Cancelar'),
+              if (!acceptOnly) const NavigationDestination(icon: Icon(Icons.close), label: 'Cancel'),
               if (acceptOnly) const SizedBox.shrink(),
-              const NavigationDestination(icon: Icon(Icons.check), label: 'Acpetar'),
+              const NavigationDestination(icon: Icon(Icons.check), label: 'Accept'),
             ],
           ),
         ),

@@ -8,6 +8,8 @@ class BirthdayFormData {
   final int month;
   final int year;
   final String notes;
+  final int notificationHour;
+  final int notificationMinute;
 
   BirthdayFormData({
     required this.name,
@@ -15,11 +17,14 @@ class BirthdayFormData {
     required this.month,
     required this.year,
     required this.notes,
+    this.notificationHour = 9,
+    this.notificationMinute = 0,
   });
 
   @override
   String toString() {
-    return "NewBirthdayData(name: $name, day: $day, month: $month, year: $year)";
+    return 'BirthdayFormData(name: $name, day: $day, month: $month, year: $year, '
+        'notif: $notificationHour:${notificationMinute.toString().padLeft(2, '0')})';
   }
 
   BirthdayFormData copyWith({
@@ -28,6 +33,8 @@ class BirthdayFormData {
     int? month,
     int? year,
     String? notes,
+    int? notificationHour,
+    int? notificationMinute,
   }) {
     return BirthdayFormData(
       name: name ?? this.name,
@@ -35,6 +42,8 @@ class BirthdayFormData {
       month: month ?? this.month,
       year: year ?? this.year,
       notes: notes ?? this.notes,
+      notificationHour: notificationHour ?? this.notificationHour,
+      notificationMinute: notificationMinute ?? this.notificationMinute,
     );
   }
 }
@@ -51,7 +60,6 @@ class BirthdayFormView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // final user = FirebaseAuth.instance.currentUser;
     final strings = appStrings(context);
 
     final days = <int>[];
@@ -62,16 +70,20 @@ class BirthdayFormView extends StatelessWidget {
     final months = <String>[];
     for (int i = 1; i <= 12; i++) {
       final date = DateTime(2000, i, 15);
-      final format = DateFormat('MMMM', strings.localeName);
-
-      months.add(format.format(date));
+      months.add(DateFormat('MMMM', 'en').format(date));
     }
+
+    final notifTime = TimeOfDay(
+      hour: data.notificationHour,
+      minute: data.notificationMinute,
+    );
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Form(
         child: ListView(
           children: [
+            // ── Name ──────────────────────────────────────────────
             TextFormField(
               decoration: InputDecoration(
                 filled: true,
@@ -83,6 +95,8 @@ class BirthdayFormView extends StatelessWidget {
               },
             ),
             const SizedBox(height: 10),
+
+            // ── Month & Day ───────────────────────────────────────
             Row(
               children: [
                 ExpandedDropDownPicker(
@@ -101,10 +115,12 @@ class BirthdayFormView extends StatelessWidget {
                   value: data.day,
                   label: strings.day,
                   items: days.map((e) => e.toString()).toList(),
-                )
+                ),
               ],
             ),
             const SizedBox(height: 10),
+
+            // ── Year ──────────────────────────────────────────────
             BirthYearPicker(
               value: data.year,
               onChanged: (value) {
@@ -112,6 +128,8 @@ class BirthdayFormView extends StatelessWidget {
               },
             ),
             const SizedBox(height: 10),
+
+            // ── Notes ─────────────────────────────────────────────
             TextFormField(
               minLines: 2,
               maxLines: 5,
@@ -119,11 +137,42 @@ class BirthdayFormView extends StatelessWidget {
                 filled: true,
                 labelText: strings.notes,
               ),
+              initialValue: data.notes,
               onChanged: (value) {
-                onDataChange(data.copyWith(name: value));
+                onDataChange(data.copyWith(notes: value));
               },
             ),
             const SizedBox(height: 10),
+
+            // ── Notification time picker ───────────────────────────
+            Card(
+              margin: EdgeInsets.zero,
+              child: ListTile(
+                leading: const Icon(Icons.notifications_outlined),
+                title: const Text('Notification time'),
+                subtitle: const Text('When should we remind you?'),
+                trailing: Chip(
+                  label: Text(
+                    notifTime.format(context),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                onTap: () async {
+                  final picked = await showTimePicker(
+                    context: context,
+                    initialTime: notifTime,
+                    helpText: 'Pick notification time for this birthday',
+                  );
+                  if (picked != null) {
+                    onDataChange(data.copyWith(
+                      notificationHour: picked.hour,
+                      notificationMinute: picked.minute,
+                    ));
+                  }
+                },
+              ),
+            ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -131,13 +180,16 @@ class BirthdayFormView extends StatelessWidget {
   }
 }
 
+// ─── Reusable widgets (unchanged) ──────────────────────────────────────────
+
 class ExpandedDropDownPicker extends StatelessWidget {
-  const ExpandedDropDownPicker(
-      {super.key,
-      required this.label,
-      required this.items,
-      required this.onChanged,
-      required this.value});
+  const ExpandedDropDownPicker({
+    super.key,
+    required this.label,
+    required this.items,
+    required this.onChanged,
+    required this.value,
+  });
 
   final String label;
   final List<String> items;
@@ -174,8 +226,11 @@ class ExpandedDropDownPicker extends StatelessWidget {
 }
 
 class BirthYearPicker extends StatefulWidget {
-  const BirthYearPicker(
-      {super.key, required this.onChanged, required this.value});
+  const BirthYearPicker({
+    super.key,
+    required this.onChanged,
+    required this.value,
+  });
 
   final Function(int?)? onChanged;
   final int value;
@@ -199,35 +254,32 @@ class _BirthYearPickerState extends State<BirthYearPicker> {
       final turns = currentYear - year;
 
       if (turns == -1) {
-        // next year
         menuItems.add(DropdownMenuItem(
           value: year,
           child: Row(children: [
-            Text((DateTime.now().year - i).toString()),
+            Text(year.toString()),
             const SizedBox(width: 7),
             Text(strings.born_next_year,
                 style: const TextStyle(color: Colors.grey)),
           ]),
         ));
       } else if (turns == 0) {
-        // this year
         menuItems.add(DropdownMenuItem(
           value: year,
           child: Row(children: [
-            Text((DateTime.now().year - i).toString()),
+            Text(year.toString()),
             const SizedBox(width: 7),
             Text(strings.born_this_year,
                 style: const TextStyle(color: Colors.grey)),
           ]),
         ));
       } else {
-        // past years
         menuItems.add(DropdownMenuItem(
           value: year,
           child: Row(children: [
-            Text((DateTime.now().year - i).toString()),
+            Text(year.toString()),
             const SizedBox(width: 7),
-            Text("${strings.turns} $turns ${strings.years}",
+            Text('${strings.turns} $turns ${strings.years}',
                 style: const TextStyle(color: Colors.grey)),
           ]),
         ));
