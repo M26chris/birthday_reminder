@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-import 'package:birthday_reminder/helpers/birthday.dart';
+import 'package:birthday_reminder/models/birthday.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:birthday_reminder/helpers/birthday_sound.dart';
 
 class BirthdayNotificationManager {
   static final BirthdayNotificationManager _instance =
@@ -17,9 +19,8 @@ class BirthdayNotificationManager {
 
   Future<void> initialize() async {
     tz.initializeTimeZones();
-
-    // FIX: getLocalTimezone() returns String directly — no .identifier needed
-    final String timeZoneName = (await FlutterTimezone.getLocalTimezone()).identifier;
+    final timezone = await FlutterTimezone.getLocalTimezone();
+    tz.setLocalLocation(tz.getLocation(timezone.identifier));
 
     _notificationsPlugin = FlutterLocalNotificationsPlugin();
 
@@ -41,33 +42,44 @@ class BirthdayNotificationManager {
     await _notificationsPlugin.initialize(
       settings,
       onDidReceiveNotificationResponse: _onNotificationTapped,
-      onDidReceiveBackgroundNotificationResponse: _onBackgroundNotificationTapped,
+      onDidReceiveBackgroundNotificationResponse:
+          _onBackgroundNotificationTapped,
     );
 
     await _requestNotificationPermissions();
   }
 
   Future<void> _requestNotificationPermissions() async {
-    final androidImpl = _notificationsPlugin
-        .resolvePlatformSpecificImplementation<
+    final androidImpl =
+        _notificationsPlugin.resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>();
     await androidImpl?.requestNotificationsPermission();
   }
 
   /// Schedule a local notification for [birthday] using its per-birthday time.
   ///
-  /// SOUND SETUP — three steps:
-  ///   1. Place your file at: android/app/src/main/res/raw/birthday_sound.mp3
-  ///   2. The sound line below is already uncommented — just make sure the
-  ///      filename matches (without extension).
-  ///   3. Fully uninstall the app then reinstall. Android locks a notification
-  ///      channel's sound on first creation — uninstalling resets the channel.
   Future<void> scheduleBirthdayNotification(Birthday birthday) async {
     try {
       final now = DateTime.now();
       final birth = birthday.birth;
       final hour = birthday.notificationHour;
       final minute = birthday.notificationMinute;
+      final selectedSound = await BirthdaySound.load(birthday.id);
+      var customChannelId = selectedSound == null
+          ? null
+          : _customSoundChannelId(birthday.id, selectedSound.uri);
+      if (selectedSound != null &&
+          defaultTargetPlatform == TargetPlatform.android) {
+        final supported =
+            await const MethodChannel('app.remindra/birthday_sound')
+                .invokeMethod<bool>('createSoundChannel', {
+          'channelId': customChannelId,
+          'name': 'Birthday reminder sound',
+          'description': 'Custom sound for ${birthday.personName}’s birthday',
+          'uri': selectedSound.uri,
+        });
+        if (supported != true) customChannelId = null;
+      }
 
       // Build the target date for this year at the birthday's chosen time
       var scheduledDate = DateTime(
@@ -92,24 +104,23 @@ class BirthdayNotificationManager {
       final tz.TZDateTime tzScheduled =
           tz.TZDateTime.from(scheduledDate, tz.local);
 
-      // ── Notification channel (v3 = fresh channel with sound baked in) ──
-      // IMPORTANT: If you previously installed the app, UNINSTALL it first
-      // so Android creates this channel fresh with the sound attached.
-      const AndroidNotificationDetails androidDetails =
+      final AndroidNotificationDetails androidDetails =
           AndroidNotificationDetails(
-        'birthday_channel_sound_v1',       // new channel id — forces fresh channel
-        'Birthday Reminders',
-        channelDescription: 'Remindra birthday notifications with sound',
+        customChannelId ?? 'birthday_channel_sound_v1',
+        'Remindra Birthday Alerts',
+        channelDescription: selectedSound == null
+            ? 'Remindra birthday notifications with sound'
+            : 'Remindra birthday notifications with a chosen sound',
         importance: Importance.max,
         priority: Priority.high,
         enableVibration: true,
         playSound: true,
-        // sound: null,
-        sound: RawResourceAndroidNotificationSound('birthday_sound'),
-        styleInformation: BigTextStyleInformation(''),  // Ensures sound plays
-        audioAttributesUsage: AudioAttributesUsage.notification,  // Proper audio category
-        // ↑ File: android/app/src/main/res/raw/birthday_sound.mp3
-        // Remove the sound line if you don't have the file yet.
+        sound: selectedSound == null
+            ? const RawResourceAndroidNotificationSound('birthday_sound')
+            : null,
+        styleInformation: BigTextStyleInformation(''), // Ensures sound plays
+        audioAttributesUsage:
+            AudioAttributesUsage.notification, // Proper audio category
       );
 
       const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
@@ -119,7 +130,7 @@ class BirthdayNotificationManager {
         // sound: 'birthday_sound.aiff', // add iOS sound file later
       );
 
-      const NotificationDetails details = NotificationDetails(
+      final NotificationDetails details = NotificationDetails(
         android: androidDetails,
         iOS: iosDetails,
       );
@@ -137,6 +148,7 @@ class BirthdayNotificationManager {
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: DateTimeComponents.dateAndTime,
       );
 
       if (kDebugMode) {
@@ -148,9 +160,16 @@ class BirthdayNotificationManager {
         print('❌ Error scheduling notification: $e');
         print(stack);
       }
-      // Report to Crashlytics in release mode
-      // FirebaseCrashlytics.instance.recordError(e, stack);
+      rethrow;
     }
+  }
+
+  static String _customSoundChannelId(String birthdayId, String uri) {
+    var hash = 0x811c9dc5;
+    for (final unit in uri.codeUnits) {
+      hash = ((hash ^ unit) * 0x01000193) & 0xffffffff;
+    }
+    return 'birthday_custom_${birthdayId}_$hash';
   }
 
   /// Send a test notification immediately to verify sound is working
@@ -159,7 +178,7 @@ class BirthdayNotificationManager {
       const AndroidNotificationDetails androidDetails =
           AndroidNotificationDetails(
         'birthday_channel_sound_v1',
-        'Birthday Reminders',
+        'Remindra Birthday Alerts',
         channelDescription: 'Remindra birthday notifications with sound',
         importance: Importance.max,
         priority: Priority.high,
@@ -215,11 +234,33 @@ class BirthdayNotificationManager {
   /// Reschedule all birthday alarms (call on login and after reboot).
   Future<void> rescheduleAll(List<Birthday> birthdays) async {
     await cancelAllNotifications();
+    final failures = <String>[];
     for (final birthday in birthdays) {
-      await scheduleBirthdayNotification(birthday);
+      try {
+        await scheduleBirthdayNotification(birthday);
+      } catch (error, stack) {
+        failures.add(birthday.id);
+        if (kDebugMode) {
+          debugPrint('Could not reschedule birthday ${birthday.id}: $error');
+          debugPrintStack(stackTrace: stack);
+        }
+      }
+    }
+    if (failures.isNotEmpty) {
+      throw BirthdayNotificationRescheduleException(failures);
     }
     if (kDebugMode) print('✅ All birthday notifications rescheduled.');
   }
+}
+
+class BirthdayNotificationRescheduleException implements Exception {
+  const BirthdayNotificationRescheduleException(this.birthdayIds);
+
+  final List<String> birthdayIds;
+
+  @override
+  String toString() =>
+      'Could not schedule reminders for ${birthdayIds.length} birthday(s).';
 }
 
 // Top-level callback required for background notification handling

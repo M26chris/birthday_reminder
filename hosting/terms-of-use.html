@@ -4,17 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Terms of Use · Remindra</title>
-  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="icon" type="image/png" href="/favicon.png?v=3" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --purple-deep: #6A1B9A;
-      --purple-light: #9C27B0;
-      --gold: #FFC107;
-      --bg: #FAF7FF;
-      --card: #FFFFFF;
-      --text: #212121;
-      --text-muted: #616161;
+      --purple-deep: #542B50;
+      --purple-light: #805C78;
+      --gold: #D4A85F;
+      --bg: #FAF6EF;
+      --card: #FFFDF9;
+      --text: #352D33;
+      --text-muted: #766D74;
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -25,26 +25,46 @@
       padding: 16px 32px; background: var(--purple-deep);
     }
     .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-    .nav-brand img { width: 30px; height: 30px; border-radius: 8px; }
+    .nav-brand img {
+      width: 44px; height: 44px; padding: 3px; border-radius: 50%;
+      background: var(--bg); object-fit: contain;
+    }
     .nav-brand span { font-size: 18px; font-weight: 700; color: white; letter-spacing: 1px; }
-    .nav-links { display: flex; gap: 6px; }
+    .nav-links {
+      display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 4px;
+    }
     .nav-links a {
       color: rgba(255,255,255,0.8); text-decoration: none;
       font-size: 13px; padding: 5px 12px; border-radius: 20px; transition: background 0.2s;
     }
     .nav-links a:hover { background: rgba(255,255,255,0.15); color: white; }
     .page-header {
-      background: linear-gradient(135deg, var(--purple-deep), var(--purple-light));
+      background: linear-gradient(135deg, var(--purple-deep), #9B7B8F);
       color: white; padding: 48px 24px 56px; text-align: center;
     }
     .page-header h1 { font-size: clamp(28px, 5vw, 42px); font-weight: 800; }
-    .page-header p { opacity: 0.8; margin-top: 8px; font-size: 15px; }
+    .page-header p {
+      display: inline-block; max-width: 620px; margin: 12px auto 0;
+      padding: 9px 18px; border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 999px; background: rgba(39,19,37,0.28);
+      color: #fff; font-size: clamp(16px, 2.2vw, 18px); font-weight: 600;
+      line-height: 1.5; text-shadow: 0 1px 3px rgba(31,16,30,0.55);
+    }
     .content-wrap { max-width: 780px; margin: -28px auto 60px; padding: 0 20px; }
     .card {
       background: var(--card); border-radius: 20px; padding: 48px 40px;
       box-shadow: 0 8px 40px rgba(106,27,154,0.1);
     }
-    @media (max-width: 600px) { .card { padding: 28px 20px; } }
+    @media (max-width: 600px) {
+      nav { flex-direction: column; gap: 10px; padding: 12px 16px; }
+      .nav-links { justify-content: center; flex-wrap: wrap; }
+      .page-header { padding: 40px 20px 50px; }
+      .page-header p { display: block; width: fit-content; max-width: 100%; }
+      .content-wrap { margin: -22px auto 40px; padding: 0 14px; }
+      .card { padding: 28px 20px; border-radius: 16px; }
+      h2 { font-size: 17px; }
+      .effective-date { margin-bottom: 20px; }
+    }
     .effective-date {
       display: inline-block; background: rgba(106,27,154,0.08);
       color: var(--purple-deep); font-size: 13px; font-weight: 600;
@@ -64,18 +84,21 @@
     }
     footer a { color: var(--gold); text-decoration: none; }
   </style>
+  <link rel="stylesheet" href="/_shared_style.css?v=2" />
 </head>
 <body>
 
-  <nav>
+  <nav class="site-nav" aria-label="Main navigation">
     <a class="nav-brand" href="/">
-      <img src="/favicon.png" alt="Remindra" />
+      <img src="/favicon.png?v=3" alt="Remindra candle logo" />
       <span>Remindra</span>
     </a>
-    <div class="nav-links">
+    <div class="nav-links" role="navigation" aria-label="Main navigation">
       <a href="/">Home</a>
-      <a href="/privacy-policy">Privacy</a>
+      <a href="/privacy-policy">Privacy Policy</a>
+      <a href="/terms-of-use" aria-current="page">Terms of Use</a>
       <a href="/help">Help</a>
+      <a href="/about">About</a>
     </div>
   </nav>
 
@@ -116,6 +139,12 @@
         solely for the purpose of providing the service to you. We do not claim ownership of
         your data.
       </p>
+      <p>
+        On supported Android devices, you may select an audio file stored on your device
+        as a birthday notification sound. The selection remains on that device and is not
+        uploaded to Remindra. You are responsible for ensuring that you have the right to
+        use the selected audio.
+      </p>
 
       <h2>4. Intellectual Property</h2>
       <p>
@@ -133,10 +162,10 @@
 
       <h2>6. Notifications</h2>
       <p>
-        Remindra sends push notifications and local alarms at times you specify. You are
-        responsible for configuring notification times appropriately. Remindra is not liable
-        for missed notifications due to device settings, internet connectivity, or operating
-        system restrictions.
+        Remindra uses Firebase Cloud Messaging and local notifications to deliver birthday
+        reminders at the times you choose. You are responsible for enabling notifications and
+        configuring reminder times appropriately. Delivery can be affected by device settings,
+        internet connectivity, or operating system restrictions.
       </p>
 
       <h2>7. Disclaimer of Warranty</h2>
@@ -156,8 +185,8 @@
       <h2>9. Termination</h2>
       <p>
         We reserve the right to suspend or terminate your access to Remindra at any time for
-        any reason, without prior notice. You may delete your account at any time via the
-        Settings page within the app.
+        any reason, without prior notice. You can request account deletion from Settings →
+        Request data deletion in the app; the request is completed after support processes it.
       </p>
 
       <h2>10. Changes to These Terms</h2>
@@ -177,15 +206,22 @@
       <h2>12. Contact Us</h2>
       <p>
         For questions about these Terms of Use, contact us at
-        <a href="mailto:support.remindra@gmail.com">support.remindra@gmail.com</a>.
+        <a href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=support.remindra@gmail.com" target="_blank" rel="noopener noreferrer">support.remindra@gmail.com</a>.
       </p>
     </div>
   </div>
 
-  <footer>
-    &copy; 2026 Remindra &nbsp;·&nbsp;
-    <a href="/privacy-policy">Privacy Policy</a> &nbsp;·&nbsp;
-    <a href="/help">Help &amp; Contact</a>
+  <footer class="site-footer">
+    <p class="site-footer__brand">Remindra</p>
+    <p class="site-footer__tagline">Because every year counts.</p>
+    <div class="site-footer__links" role="navigation" aria-label="Footer navigation">
+      <a href="/">Home</a>
+      <a href="/privacy-policy">Privacy Policy</a>
+      <a href="/terms-of-use">Terms of Use</a>
+      <a href="/help">Help</a>
+      <a href="/about">About</a>
+    </div>
+    <p class="site-footer__copyright">&copy; 2026 Remindra. All rights reserved.</p>
   </footer>
 
 </body>

@@ -1,210 +1,121 @@
-import 'package:birthday_reminder/helpers/birthday.dart';
+import 'package:birthday_reminder/models/birthday.dart';
 import 'package:birthday_reminder/layouts/birthday_view.dart';
-import 'package:birthday_reminder/strings.dart';
 import 'package:birthday_reminder/theme.dart';
 import 'package:birthday_reminder/util.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class EnhancedBirthdayCard extends StatelessWidget {
-  const EnhancedBirthdayCard({
-    super.key,
-    required this.birthday,
-  });
+  const EnhancedBirthdayCard({super.key, required this.birthday});
 
   final Birthday birthday;
 
-  bool get isBirthdayToday {
-    final now = DateTime.now();
-    return now.day == birthday.birth.day && now.month == birthday.birth.month;
-  }
-
-  bool get isBirthdayTomorrow {
-    final tomorrow = DateTime.now().add(const Duration(days: 1));
-    return tomorrow.day == birthday.birth.day &&
-        tomorrow.month == birthday.birth.month;
-  }
-
   @override
   Widget build(BuildContext context) {
-    final strings = appStrings(context);
-    final nextBirthday = birthday.nextBirthday();
     final now = DateTime.now();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    // Date format: "Friday 03, April" or with year if next year
-    String formatter = 'EEEE dd, MMMM';
-    if (nextBirthday.year != now.year) formatter += ' y';
-
-    final difference = birthday.durationToNextBirthday();
-    final inDays = (difference.inMilliseconds / 1000 / 60 / 60 / 24).ceil();
-
-    // ── Countdown badge text ───────────────────────────────────────
-    final String countdownText;
-    if (isBirthdayToday) {
-      countdownText = '🎂 ${strings.today}';
-    } else if (inDays == 1) {
-      countdownText = '🎉 ${strings.tomorrow}';
-    } else {
-      countdownText = '${strings.in_word} $inDays ${strings.days}';
-    }
-
-    // ── Age label ─────────────────────────────────────────────────
+    final nextBirthday = birthday.nextBirthday();
+    final nextDay =
+        DateTime(nextBirthday.year, nextBirthday.month, nextBirthday.day);
+    final today = DateTime(now.year, now.month, now.day);
+    final days = nextDay.difference(today).inDays;
+    final isToday = days == 0;
+    final isTomorrow = days == 1;
     final nextAge = birthday.nextAge();
-    final String? ageText =
-        nextAge != null ? 'Turns $nextAge ${strings.years}' : null;
+    const avatarColors = [
+      Color(0xFFEAD5C3),
+      Color(0xFFD9E3D3),
+      Color(0xFFE8D7DF),
+      Color(0xFFD8E1E8),
+    ];
+    final colorSeed =
+        birthday.personName.codeUnits.fold<int>(0, (sum, unit) => sum + unit);
+    final avatarColor = avatarColors[colorSeed % avatarColors.length];
+    final dateLabel = DateFormat('EEE, MMM d').format(nextBirthday);
+    final countdown = isToday
+        ? 'Today'
+        : isTomorrow
+            ? 'Tomorrow'
+            : 'In $days days';
+    final surface = isToday
+        ? const Color(0xFFF6E8E8)
+        : Theme.of(context).colorScheme.surface;
 
-    // ── Date string ───────────────────────────────────────────────
-    final dateText = DateFormat(formatter, 'en').format(nextBirthday);
-
-    // ── Colours ───────────────────────────────────────────────────
-    final avatarColors = generateRandomColor(birthday.personName);
-    final bool isSpecial = isBirthdayToday || isBirthdayTomorrow;
-
-    final Color badgeColor = isBirthdayToday
-        ? RemindraTheme.accentGold
-        : isBirthdayTomorrow
-            ? RemindraTheme.accentAmber
-            : (isDark
-                ? Colors.white.withOpacity(0.12)
-                : const Color(0xFFEDE7F6));
-
-    final Color badgeTextColor = isSpecial ? Colors.black : (isDark ? Colors.white70 : const Color(0xFF6A1B9A));
-
-    return GestureDetector(
-      onTap: () => showBirthdayView(context, birthday: birthday),
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          gradient: isBirthdayToday
-              ? LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    RemindraTheme.primaryDeep.withOpacity(0.85),
-                    RemindraTheme.primaryLight.withOpacity(0.7),
-                  ],
-                )
-              : null,
-          color: isBirthdayToday ? null : Theme.of(context).cardColor,
-          boxShadow: [
-            BoxShadow(
-              color: isBirthdayToday
-                  ? RemindraTheme.primaryDeep.withOpacity(0.3)
-                  : Colors.black.withOpacity(0.07),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
+    return Material(
+      color: surface,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () => showBirthdayView(context, birthday: birthday),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isToday
+                  ? RemindraTheme.rose.withValues(alpha: 0.45)
+                  : RemindraTheme.line,
             ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          ),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // ── Avatar ──────────────────────────────────────────
               CircleAvatar(
                 radius: 24,
-                backgroundColor: isBirthdayToday
-                    ? RemindraTheme.accentGold
-                    : avatarColors.background,
-                foregroundColor:
-                    isBirthdayToday ? Colors.black : avatarColors.foreground,
+                backgroundColor: isToday ? RemindraTheme.plum : avatarColor,
+                foregroundColor: RemindraTheme.plum,
                 child: Text(
                   extractInitials(birthday.personName),
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
               ),
-
-              const SizedBox(width: 12),
-
-              // ── Name + date + age (vertical, no overflow) ───────
+              const SizedBox(width: 13),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Name
                     Text(
                       birthday.personName,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: isBirthdayToday ? Colors.white : null,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
                           ),
                     ),
-
-                    const SizedBox(height: 3),
-
-                    // Date
+                    const SizedBox(height: 4),
                     Text(
-                      dateText,
+                      '$dateLabel${nextAge == null ? '' : '  ·  Turns $nextAge'}',
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: isBirthdayToday
-                                ? Colors.white.withOpacity(0.85)
-                                : Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.color,
-                          ),
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
-
-                    // Age (only if known)
-                    if (ageText != null) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        ageText,
-                        style:
-                            Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: isBirthdayToday
-                                      ? Colors.white.withOpacity(0.75)
-                                      : Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.color
-                                          ?.withOpacity(0.7),
-                                  fontStyle: FontStyle.italic,
-                                ),
-                      ),
-                    ],
-
-                    // Notes (if any)
-                    if (birthday.notes.isNotEmpty) ...[
-                      const SizedBox(height: 2),
+                    if (birthday.notes.trim().isNotEmpty) ...[
+                      const SizedBox(height: 4),
                       Text(
                         birthday.notes,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style:
-                            Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  fontStyle: FontStyle.italic,
-                                  color: isBirthdayToday
-                                      ? Colors.white.withOpacity(0.7)
-                                      : Colors.grey,
-                                ),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              fontStyle: FontStyle.italic,
+                            ),
                       ),
                     ],
                   ],
                 ),
               ),
-
               const SizedBox(width: 8),
-
-              // ── Countdown badge (right side, no overflow risk) ──
               Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 10, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                 decoration: BoxDecoration(
-                  color: badgeColor,
-                  borderRadius: BorderRadius.circular(20),
+                  color: isToday ? RemindraTheme.plum : const Color(0xFFF0E9E3),
+                  borderRadius: BorderRadius.circular(13),
                 ),
                 child: Text(
-                  countdownText,
+                  countdown,
                   style: TextStyle(
+                    color: isToday ? Colors.white : RemindraTheme.plum,
                     fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: badgeTextColor,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),

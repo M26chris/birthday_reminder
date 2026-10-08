@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="About Remindra, a thoughtful way to keep birthdays and the people you love close." />
+  <title>About · Remindra</title>
+  <link rel="icon" type="image/png" href="/favicon.png?v=3" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --purple-deep: #542B50;
+      --purple-light: #805C78;
+      --gold: #D4A85F;
+      --bg: #FAF6EF;
+      --card: #FFFDF9;
+      --text: #352D33;
+      --text-muted: #766D74;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh;
+    }
+    nav {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 20px; padding: 12px 32px; background: var(--purple-deep);
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px;
+      flex: 0 0 auto; text-decoration: none;
+    }
+    .nav-brand img {
+      width: 44px; height: 44px; padding: 3px; border-radius: 50%;
+      background: var(--bg); object-fit: contain;
+    }
+    .nav-brand span {
+      color: white; font-size: 20px; font-weight: 700; letter-spacing: 1px;
+    }
+    .nav-links {
+      display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 4px;
+    }
+    .nav-links a {
+      color: rgba(255,255,255,0.85); text-decoration: none;
+      font-size: 13px; padding: 7px 11px; border-radius: 20px;
+    }
+    .nav-links a:hover, .nav-links a[aria-current="page"] {
+      color: white; background: rgba(255,255,255,0.16);
+    }
+    .page-header {
+      background: linear-gradient(135deg, var(--purple-deep), #9B7B8F);
+      color: white; padding: 52px 24px 62px; text-align: center;
+    }
+    .page-header h1 { font-size: clamp(30px, 5vw, 46px); font-weight: 800; }
+    .page-header p {
+      display: inline-block; max-width: 620px; margin: 12px auto 0;
+      padding: 9px 18px; border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 999px; background: rgba(39,19,37,0.28);
+      color: #fff; font-size: clamp(16px, 2.2vw, 18px); font-weight: 600;
+      line-height: 1.5; text-shadow: 0 1px 3px rgba(31,16,30,0.55);
+    }
+    .content-wrap { max-width: 900px; margin: -30px auto 60px; padding: 0 20px; }
+    .about-card {
+      display: grid; grid-template-columns: minmax(150px, 220px) minmax(0, 1fr);
+      align-items: center; gap: clamp(24px, 6vw, 56px);
+      padding: clamp(24px, 5vw, 48px); border-radius: 22px;
+      background: var(--card); box-shadow: 0 8px 40px rgba(84,43,80,0.12);
+    }
+    .about-logo {
+      display: block; width: 100%; max-width: 220px; height: auto;
+      justify-self: center; padding: 12px; border-radius: 50%;
+      background: var(--bg);
+    }
+    .about-copy h2 {
+      color: var(--purple-deep); font-size: clamp(22px, 3vw, 30px);
+      margin-bottom: 14px;
+    }
+    .about-copy p {
+      color: var(--text-muted); font-size: 16px; line-height: 1.75;
+      margin-bottom: 14px;
+    }
+    .about-copy p:last-child { margin-bottom: 0; }
+    .about-copy a { color: var(--purple-deep); font-weight: 600; }
+    footer {
+      background: var(--purple-deep); color: rgba(255,255,255,0.75);
+      padding: 32px 20px; text-align: center; font-size: 13px;
+    }
+    footer .footer-links {
+      display: flex; justify-content: center; flex-wrap: wrap;
+      gap: 8px 18px; margin-bottom: 16px;
+    }
+    footer a { color: var(--gold); text-decoration: none; }
+    @media (max-width: 680px) {
+      nav { flex-direction: column; gap: 8px; padding: 12px 14px; }
+      .nav-links { justify-content: center; }
+      .nav-links a { padding: 7px 9px; font-size: 12px; }
+      .page-header { padding: 40px 18px 52px; }
+      .page-header p { display: block; width: fit-content; max-width: 100%; }
+      .content-wrap { margin: -22px auto 40px; padding: 0 14px; }
+      .about-card { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+      .about-logo { max-width: 160px; }
+      .about-copy { text-align: center; }
+    }
+  </style>
+  <link rel="stylesheet" href="/_shared_style.css?v=2" />
+</head>
+<body>
+  <nav class="site-nav" aria-label="Main navigation">
+    <a class="nav-brand" href="/">
+      <img src="/favicon.png?v=3" alt="Remindra candle logo" />
+      <span>Remindra</span>
+    </a>
+    <div class="nav-links" role="navigation" aria-label="Main navigation">
+      <a href="/">Home</a>
+      <a href="/privacy-policy">Privacy Policy</a>
+      <a href="/terms-of-use">Terms of Use</a>
+      <a href="/help">Help</a>
+      <a href="/about" aria-current="page">About</a>
+    </div>
+  </nav>
+
+  <header class="page-header">
+    <h1>About Remindra</h1>
+    <p>Because every year counts.</p>
+  </header>
+
+  <main class="content-wrap">
+    <section class="about-card">
+      <img class="about-logo" src="/favicon.png?v=3" alt="Remindra candle emblem" />
+      <div class="about-copy">
+        <h2>Moments made timeless.</h2>
+        <p>
+          Remindra helps you keep the birthdays of your favourite people close.
+          Save the dates, add personal notes and optional birth years, and choose
+          when you would like a gentle reminder.
+        </p>
+        <p>
+          It is made to make remembering feel a little more thoughtful, so there
+          is more time to celebrate the people who matter.
+        </p>
+        <p>
+          Questions? <a href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=support.remindra@gmail.com" target="_blank" rel="noopener noreferrer">Contact Remindra support</a>.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p class="site-footer__brand">Remindra</p>
+    <p class="site-footer__tagline">Because every year counts.</p>
+    <div class="site-footer__links" role="navigation" aria-label="Footer navigation">
+      <a href="/">Home</a>
+      <a href="/privacy-policy">Privacy Policy</a>
+      <a href="/terms-of-use">Terms of Use</a>
+      <a href="/help">Help</a>
+      <a href="/about">About</a>
+    </div>
+    <p class="site-footer__copyright">&copy; 2026 Remindra. All rights reserved.</p>
+  </footer>
+</body>
+</html>

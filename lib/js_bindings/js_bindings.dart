@@ -1,6 +1,4 @@
-library js_bindings;
-
-import 'package:js/js.dart';
+import 'dart:js_interop';
 
 @JS()
 external void appFinishedLoading();

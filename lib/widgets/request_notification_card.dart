@@ -1,5 +1,6 @@
 import 'package:birthday_reminder/helpers/notifications_registration.dart';
 import 'package:birthday_reminder/strings.dart';
+import 'package:birthday_reminder/theme.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,124 +14,118 @@ class RequestNotificationCard extends StatefulWidget {
 }
 
 class _RequestNotificationCardState extends State<RequestNotificationCard> {
-  bool show = false;
+  bool _show = false;
+  bool _enabling = false;
 
   @override
   void initState() {
     super.initState();
-    FirebaseMessaging.instance.getNotificationSettings().then((value) {
-      if (value.authorizationStatus == AuthorizationStatus.authorized) {
-        // Already enabled — don't prompt
-        if (mounted) setState(() => show = false);
-      } else {
-        SharedPreferences.getInstance().then((prefs) {
-          if (prefs.getBool('prefer_no_notifications') ?? false) return;
-          if (mounted) setState(() => show = true);
-        });
-      }
-    });
+    _loadPromptState();
   }
 
-  Future<void> dismiss() async {
+  Future<void> _loadPromptState() async {
+    final settings = await FirebaseMessaging.instance.getNotificationSettings();
+    final authorized =
+        settings.authorizationStatus == AuthorizationStatus.authorized;
+    if (authorized) {
+      if (mounted) {
+        setState(() => _show = false);
+      }
+      return;
+    }
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(
+          () => _show = !(prefs.getBool('prefer_no_notifications') ?? false));
+    }
+  }
+
+  Future<void> _dismiss() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('prefer_no_notifications', true);
-    if (mounted) setState(() => show = false);
+    if (mounted) setState(() => _show = false);
   }
 
-  void enable() {
-    NotificationsRegistration.instance.enableNotifications().then((success) {
-      if (mounted) setState(() => show = !success);
-    });
+  Future<void> _enable() async {
+    if (_enabling) return;
+    setState(() => _enabling = true);
+    try {
+      final enabled =
+          await NotificationsRegistration.instance.enableNotifications();
+      if (!mounted) return;
+      setState(() {
+        _show = !enabled;
+        _enabling = false;
+      });
+      if (!enabled) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text(
+                  'Notifications could not be enabled. Check device permissions and try again.')),
+        );
+      }
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _enabling = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Could not enable notifications. Please try again.')),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!show) return const SizedBox.shrink();
-
+    if (!_show) return const SizedBox.shrink();
     final strings = appStrings(context);
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF6A1B9A), Color(0xFF9C27B0)],
-          ),
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF6A1B9A).withOpacity(0.3),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            )
-          ],
-        ),
+      padding: const EdgeInsets.only(bottom: 18),
+      child: Card(
+        color: Theme.of(context).colorScheme.surface,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 18, 16, 10),
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
               Row(
                 children: [
-                  const Icon(
-                    Icons.notifications_active_rounded,
-                    color: Color(0xFFFFC107),
-                    size: 22,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    strings.enbale_notifications,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF0E5D8),
+                      borderRadius: BorderRadius.circular(14),
                     ),
+                    child: const Icon(Icons.notifications_active_outlined,
+                        color: RemindraTheme.plum),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(strings.enbale_notifications,
+                        style: Theme.of(context).textTheme.titleMedium),
                   ),
                 ],
               ),
-
-              const SizedBox(height: 8),
-
-              Text(
-                strings.enable_notifications_description,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 13,
-                ),
-              ),
-
-              const SizedBox(height: 4),
-
-              // Buttons
+              const SizedBox(height: 12),
+              Text(strings.enable_notifications_description,
+                  style: Theme.of(context).textTheme.bodyMedium),
+              const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(
-                    onPressed: dismiss,
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.white54,
-                    ),
-                    child: const Text('Not now'),
-                  ),
-                  const SizedBox(width: 4),
-                  ElevatedButton(
-                    onPressed: enable,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFFC107),
-                      foregroundColor: Colors.black,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 18, vertical: 8),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20)),
-                    ),
-                    child: const Text(
-                      'Enable',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
+                  TextButton(onPressed: _dismiss, child: const Text('Not now')),
+                  const SizedBox(width: 8),
+                  FilledButton.icon(
+                    onPressed: _enabling ? null : _enable,
+                    icon: _enabling
+                        ? const SizedBox.square(
+                            dimension: 16,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white),
+                          )
+                        : const Icon(Icons.notifications_active_outlined),
+                    label: Text(_enabling ? 'Enabling' : 'Enable reminders'),
                   ),
                 ],
               ),

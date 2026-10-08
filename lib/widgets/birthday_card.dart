@@ -1,4 +1,4 @@
-import 'package:birthday_reminder/helpers/birthday.dart';
+import 'package:birthday_reminder/models/birthday.dart';
 import 'package:birthday_reminder/layouts/birthday_view.dart';
 import 'package:birthday_reminder/strings.dart';
 import 'package:birthday_reminder/util.dart';

@@ -1,17 +1,11 @@
 import 'package:birthday_reminder/strings.dart';
+import 'package:birthday_reminder/helpers/birthday_sound.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 class BirthdayFormData {
-  final String name;
-  final int day;
-  final int month;
-  final int year;
-  final String notes;
-  final int notificationHour;
-  final int notificationMinute;
-
-  BirthdayFormData({
+  const BirthdayFormData({
     required this.name,
     required this.day,
     required this.month,
@@ -19,13 +13,19 @@ class BirthdayFormData {
     required this.notes,
     this.notificationHour = 9,
     this.notificationMinute = 0,
+    this.soundUri,
+    this.soundName,
   });
 
-  @override
-  String toString() {
-    return 'BirthdayFormData(name: $name, day: $day, month: $month, year: $year, '
-        'notif: $notificationHour:${notificationMinute.toString().padLeft(2, '0')})';
-  }
+  final String name;
+  final int day;
+  final int month;
+  final int year;
+  final String notes;
+  final int notificationHour;
+  final int notificationMinute;
+  final String? soundUri;
+  final String? soundName;
 
   BirthdayFormData copyWith({
     String? name,
@@ -35,17 +35,21 @@ class BirthdayFormData {
     String? notes,
     int? notificationHour,
     int? notificationMinute,
-  }) {
-    return BirthdayFormData(
-      name: name ?? this.name,
-      day: day ?? this.day,
-      month: month ?? this.month,
-      year: year ?? this.year,
-      notes: notes ?? this.notes,
-      notificationHour: notificationHour ?? this.notificationHour,
-      notificationMinute: notificationMinute ?? this.notificationMinute,
-    );
-  }
+    String? soundUri,
+    String? soundName,
+    bool clearSound = false,
+  }) =>
+      BirthdayFormData(
+        name: name ?? this.name,
+        day: day ?? this.day,
+        month: month ?? this.month,
+        year: year ?? this.year,
+        notes: notes ?? this.notes,
+        notificationHour: notificationHour ?? this.notificationHour,
+        notificationMinute: notificationMinute ?? this.notificationMinute,
+        soundUri: clearSound ? null : soundUri ?? this.soundUri,
+        soundName: clearSound ? null : soundName ?? this.soundName,
+      );
 }
 
 class BirthdayFormView extends StatelessWidget {
@@ -56,249 +60,290 @@ class BirthdayFormView extends StatelessWidget {
   });
 
   final BirthdayFormData data;
-  final void Function(BirthdayFormData data) onDataChange;
+  final ValueChanged<BirthdayFormData> onDataChange;
 
   @override
   Widget build(BuildContext context) {
     final strings = appStrings(context);
-
-    final days = <int>[];
-    for (int i = 1; i <= 31; i++) {
-      days.add(i);
-    }
-
-    final months = <String>[];
-    for (int i = 1; i <= 12; i++) {
-      final date = DateTime(2000, i, 15);
-      months.add(DateFormat('MMMM', 'en').format(date));
-    }
-
-    final notifTime = TimeOfDay(
+    final months = List.generate(
+      12,
+      (index) => DateFormat('MMMM', 'en').format(DateTime(2000, index + 1, 1)),
+    );
+    final time = TimeOfDay(
       hour: data.notificationHour,
       minute: data.notificationMinute,
     );
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      child: Form(
-        child: ListView(
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 32),
+      children: [
+        Container(
+          padding: const EdgeInsets.all(22),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF0E5D8),
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.cake_outlined,
+                  color: Color(0xFF542B50), size: 26),
+              const SizedBox(height: 12),
+              Text('Make it memorable',
+                  style: Theme.of(context).textTheme.headlineMedium),
+              const SizedBox(height: 6),
+              Text(
+                'Add the little details now. We’ll help you remember the day.',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        _FieldLabel(title: 'THE PERSON'),
+        const SizedBox(height: 9),
+        TextFormField(
+          key: const ValueKey('birthday-name-field'),
+          initialValue: data.name,
+          textCapitalization: TextCapitalization.words,
+          textInputAction: TextInputAction.next,
+          decoration: InputDecoration(
+            labelText: strings.name_of_person,
+            prefixIcon: const Icon(Icons.person_outline_rounded),
+          ),
+          onChanged: (value) => onDataChange(data.copyWith(name: value)),
+        ),
+        const SizedBox(height: 22),
+        _FieldLabel(title: 'THE DATE'),
+        const SizedBox(height: 9),
+        Row(
           children: [
-            // ── Name ──────────────────────────────────────────────
-            TextFormField(
-              decoration: InputDecoration(
-                filled: true,
-                labelText: strings.name_of_person,
-              ),
-              initialValue: data.name,
-              onChanged: (value) {
-                onDataChange(data.copyWith(name: value));
-              },
-            ),
-            const SizedBox(height: 10),
-
-            // ── Month & Day ───────────────────────────────────────
-            Row(
-              children: [
-                ExpandedDropDownPicker(
-                  onChanged: (value) {
-                    onDataChange(data.copyWith(month: value));
-                  },
-                  value: data.month,
-                  label: strings.month,
-                  items: months,
-                ),
-                const SizedBox(width: 10),
-                ExpandedDropDownPicker(
-                  onChanged: (value) {
-                    onDataChange(data.copyWith(day: value));
-                  },
-                  value: data.day,
-                  label: strings.day,
-                  items: days.map((e) => e.toString()).toList(),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-
-            // ── Year ──────────────────────────────────────────────
-            BirthYearPicker(
-              value: data.year,
-              onChanged: (value) {
-                onDataChange(data.copyWith(year: value));
-              },
-            ),
-            const SizedBox(height: 10),
-
-            // ── Notes ─────────────────────────────────────────────
-            TextFormField(
-              minLines: 2,
-              maxLines: 5,
-              decoration: InputDecoration(
-                filled: true,
-                labelText: strings.notes,
-              ),
-              initialValue: data.notes,
-              onChanged: (value) {
-                onDataChange(data.copyWith(notes: value));
-              },
-            ),
-            const SizedBox(height: 10),
-
-            // ── Notification time picker ───────────────────────────
-            Card(
-              margin: EdgeInsets.zero,
-              child: ListTile(
-                leading: const Icon(Icons.notifications_outlined),
-                title: const Text('Notification time'),
-                subtitle: const Text('When should we remind you?'),
-                trailing: Chip(
-                  label: Text(
-                    notifTime.format(context),
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                onTap: () async {
-                  final picked = await showTimePicker(
-                    context: context,
-                    initialTime: notifTime,
-                    helpText: 'Pick notification time for this birthday',
-                  );
-                  if (picked != null) {
-                    onDataChange(data.copyWith(
-                      notificationHour: picked.hour,
-                      notificationMinute: picked.minute,
-                    ));
-                  }
-                },
+            Expanded(
+              flex: 3,
+              child: _NumberPicker(
+                label: strings.month,
+                value: data.month,
+                items: months,
+                onChanged: (value) => onDataChange(data.copyWith(month: value)),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _NumberPicker(
+                label: strings.day,
+                value: data.day,
+                items: List.generate(31, (index) => '${index + 1}'),
+                onChanged: (value) => onDataChange(data.copyWith(day: value)),
+              ),
+            ),
           ],
         ),
-      ),
+        const SizedBox(height: 10),
+        BirthYearPicker(
+          value: data.year,
+          onChanged: (value) {
+            if (value != null) onDataChange(data.copyWith(year: value));
+          },
+        ),
+        const SizedBox(height: 22),
+        _FieldLabel(title: 'A NOTE FOR LATER'),
+        const SizedBox(height: 9),
+        TextFormField(
+          initialValue: data.notes,
+          minLines: 2,
+          maxLines: 4,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: InputDecoration(
+            labelText: strings.notes,
+            hintText: 'A favourite cake, a gift idea, a little reminder…',
+            alignLabelWithHint: true,
+          ),
+          onChanged: (value) => onDataChange(data.copyWith(notes: value)),
+        ),
+        const SizedBox(height: 22),
+        _FieldLabel(title: 'THE REMINDER'),
+        const SizedBox(height: 9),
+        Material(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(18),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(18),
+            onTap: () async {
+              final selected = await showTimePicker(
+                context: context,
+                initialTime: time,
+                helpText: 'Choose when to be reminded',
+              );
+              if (selected == null) return;
+              onDataChange(data.copyWith(
+                notificationHour: selected.hour,
+                notificationMinute: selected.minute,
+              ));
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+              child: Row(
+                children: [
+                  const Icon(Icons.notifications_active_outlined),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(strings.notification_time,
+                            style: Theme.of(context).textTheme.titleMedium),
+                        const SizedBox(height: 3),
+                        Text('A gentle nudge on their birthday',
+                            style: Theme.of(context).textTheme.bodySmall),
+                      ],
+                    ),
+                  ),
+                  Text(time.format(context),
+                      style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.chevron_right_rounded),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
+        _FieldLabel(title: 'THE SOUND'),
+        const SizedBox(height: 9),
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.music_note_rounded),
+            title: Text(data.soundName ?? 'Remindra default sound'),
+            subtitle: Text(
+              data.soundName == null
+                  ? 'Choose an audio file on this device for this birthday.'
+                  : 'This audio plays for this birthday’s reminder only.',
+            ),
+            trailing: PopupMenuButton<String>(
+              tooltip: 'Choose birthday sound',
+              onSelected: (choice) async {
+                try {
+                  if (choice == 'default') {
+                    onDataChange(data.copyWith(clearSound: true));
+                    return;
+                  }
+                  final selection = await BirthdaySound.pick();
+                  if (!context.mounted) return;
+                  if (selection != null) {
+                    onDataChange(data.copyWith(
+                      soundUri: selection.uri,
+                      soundName: selection.name,
+                    ));
+                  }
+                } on UnsupportedError catch (error) {
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(error.message ?? 'Not supported.')),
+                  );
+                } on PlatformException catch (error) {
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        error.message ?? 'Could not open the audio library.',
+                      ),
+                    ),
+                  );
+                } on FormatException catch (error) {
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(error.message)),
+                  );
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'choose',
+                  child: Text('Choose audio file'),
+                ),
+                if (data.soundUri != null)
+                  const PopupMenuItem(
+                    value: 'default',
+                    child: Text('Use default sound'),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
 
-// ─── Reusable widgets (unchanged) ──────────────────────────────────────────
+class _FieldLabel extends StatelessWidget {
+  const _FieldLabel({required this.title});
 
-class ExpandedDropDownPicker extends StatelessWidget {
-  const ExpandedDropDownPicker({
-    super.key,
+  final String title;
+
+  @override
+  Widget build(BuildContext context) => Text(
+        title,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              letterSpacing: 1.3,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF766D74),
+            ),
+      );
+}
+
+class _NumberPicker extends StatelessWidget {
+  const _NumberPicker({
     required this.label,
+    required this.value,
     required this.items,
     required this.onChanged,
-    required this.value,
   });
 
   final String label;
-  final List<String> items;
   final int value;
-  final Function(int?)? onChanged;
+  final List<String> items;
+  final ValueChanged<int> onChanged;
 
   @override
-  Widget build(BuildContext context) {
-    final menuItems = <DropdownMenuItem<int>>[];
-
-    for (var i = 0; i < items.length; i++) {
-      menuItems.add(
-        DropdownMenuItem(
-          value: i,
-          child: Text(items[i]),
-        ),
-      );
-    }
-
-    return Expanded(
-      child: DropdownButtonFormField(
-        onChanged: (value) {
-          onChanged?.call(value != null ? value + 1 : null);
-        },
-        decoration: InputDecoration(
-          filled: true,
-          labelText: label,
-        ),
+  Widget build(BuildContext context) => DropdownButtonFormField<int>(
         initialValue: value - 1,
-        items: menuItems,
-      ),
-    );
-  }
+        decoration: InputDecoration(labelText: label),
+        items: [
+          for (var index = 0; index < items.length; index++)
+            DropdownMenuItem(value: index, child: Text(items[index])),
+        ],
+        onChanged: (index) {
+          if (index != null) onChanged(index + 1);
+        },
+      );
 }
 
-class BirthYearPicker extends StatefulWidget {
+class BirthYearPicker extends StatelessWidget {
   const BirthYearPicker({
     super.key,
     required this.onChanged,
     required this.value,
   });
 
-  final Function(int?)? onChanged;
+  final ValueChanged<int?> onChanged;
   final int value;
-
-  @override
-  State<BirthYearPicker> createState() => _BirthYearPickerState();
-}
-
-class _BirthYearPickerState extends State<BirthYearPicker> {
-  List<DropdownMenuItem<int>> menuItems(BuildContext context) {
-    final strings = appStrings(context);
-    final menuItems = <DropdownMenuItem<int>>[];
-    menuItems.add(DropdownMenuItem(
-      value: 0,
-      child: Text(strings.not_specified),
-    ));
-
-    for (int i = -1; i < 130; i++) {
-      final currentYear = DateTime.now().year;
-      final year = currentYear - i;
-      final turns = currentYear - year;
-
-      if (turns == -1) {
-        menuItems.add(DropdownMenuItem(
-          value: year,
-          child: Row(children: [
-            Text(year.toString()),
-            const SizedBox(width: 7),
-            Text(strings.born_next_year,
-                style: const TextStyle(color: Colors.grey)),
-          ]),
-        ));
-      } else if (turns == 0) {
-        menuItems.add(DropdownMenuItem(
-          value: year,
-          child: Row(children: [
-            Text(year.toString()),
-            const SizedBox(width: 7),
-            Text(strings.born_this_year,
-                style: const TextStyle(color: Colors.grey)),
-          ]),
-        ));
-      } else {
-        menuItems.add(DropdownMenuItem(
-          value: year,
-          child: Row(children: [
-            Text(year.toString()),
-            const SizedBox(width: 7),
-            Text('${strings.turns} $turns ${strings.years}',
-                style: const TextStyle(color: Colors.grey)),
-          ]),
-        ));
-      }
-    }
-    return menuItems;
-  }
 
   @override
   Widget build(BuildContext context) {
     final strings = appStrings(context);
-    return DropdownButtonFormField(
-      onChanged: widget.onChanged,
+    final currentYear = DateTime.now().year;
+    return DropdownButtonFormField<int>(
+      initialValue: value,
       decoration: InputDecoration(
-        filled: true,
         labelText: strings.year_of_birth,
+        prefixIcon: const Icon(Icons.calendar_month_outlined),
       ),
-      initialValue: widget.value,
-      items: menuItems(context),
+      items: [
+        DropdownMenuItem(value: 0, child: Text(strings.not_specified)),
+        for (var year = currentYear; year >= currentYear - 130; year--)
+          DropdownMenuItem(value: year, child: Text('$year')),
+      ],
+      onChanged: onChanged,
     );
   }
 }

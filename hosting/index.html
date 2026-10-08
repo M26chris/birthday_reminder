@@ -3,21 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Remindra — Moments made timeless. The birthday reminder app that never lets you forget." />
+  <meta name="description" content="Remindra — Moments made timeless. Keep birthdays, personal notes, and thoughtful reminders together." />
   <title>Remindra · Moments made timeless</title>
-  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="icon" type="image/png" href="/favicon.png?v=3" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --purple-deep: #6A1B9A;
-      --purple-light: #9C27B0;
-      --gold: #FFC107;
-      --amber: #FF9800;
-      --bg: #FAF7FF;
-      --card: #FFFFFF;
-      --text: #212121;
-      --text-muted: #757575;
+      --purple-deep: #542B50;
+      --purple-light: #805C78;
+      --gold: #D4A85F;
+      --amber: #B87A48;
+      --bg: #FAF6EF;
+      --card: #FFFDF9;
+      --text: #352D33;
+      --text-muted: #766D74;
     }
 
     body {
@@ -44,14 +44,19 @@
       gap: 10px;
       text-decoration: none;
     }
-    .nav-brand img { width: 32px; height: 32px; border-radius: 8px; }
+    .nav-brand img {
+      width: 44px; height: 44px; padding: 3px; border-radius: 50%;
+      background: var(--bg); object-fit: contain;
+    }
     .nav-brand span {
       font-size: 20px;
       font-weight: 700;
       color: white;
       letter-spacing: 1px;
     }
-    .nav-links { display: flex; gap: 8px; }
+    .nav-links {
+      display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 6px;
+    }
     .nav-links a {
       color: rgba(255,255,255,0.85);
       text-decoration: none;
@@ -64,7 +69,7 @@
 
     /* ── HERO ── */
     .hero {
-      background: linear-gradient(135deg, var(--purple-deep) 0%, var(--purple-light) 60%, #CE93D8 100%);
+      background: linear-gradient(135deg, var(--purple-deep) 0%, #684766 65%, #9B7B8F 100%);
       color: white;
       text-align: center;
       padding: 80px 24px 100px;
@@ -88,10 +93,12 @@
       border-radius: 50%;
     }
     .hero-logo {
-      width: 120px;
-      height: 120px;
+      width: clamp(132px, 24vw, 176px);
+      height: clamp(132px, 24vw, 176px);
       margin: 0 auto 24px;
-      border-radius: 28px;
+      border-radius: 50%;
+      padding: 8px;
+      background: var(--bg);
       box-shadow: 0 20px 60px rgba(0,0,0,0.3);
       position: relative;
       z-index: 1;
@@ -203,80 +210,105 @@
     }
     footer .footer-links a:hover { color: var(--gold); }
     footer .footer-copy { font-size: 12px; opacity: 0.5; }
+
+    @media (max-width: 600px) {
+      nav {
+        flex-direction: column;
+        gap: 10px;
+        padding: 12px 16px;
+      }
+      .nav-links {
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      .hero { padding: 56px 20px 72px; }
+      .hero-logo { margin-bottom: 18px; }
+      .hero p { margin-bottom: 28px; }
+      .hero-cta { max-width: 100%; }
+      .section { padding: 52px 18px; }
+      .section-title { margin-bottom: 32px; }
+      .features { grid-template-columns: minmax(0, 1fr); }
+      footer { padding: 32px 18px; }
+    }
   </style>
+  <link rel="stylesheet" href="/_shared_style.css?v=2" />
 </head>
 <body>
 
-  <nav>
+  <nav class="site-nav" aria-label="Main navigation">
     <a class="nav-brand" href="/">
-      <img src="/favicon.png" alt="Remindra" />
+      <img src="/favicon.png?v=3" alt="Remindra candle logo" />
       <span>Remindra</span>
     </a>
-    <div class="nav-links">
-      <a href="/privacy-policy">Privacy</a>
-      <a href="/terms-of-use">Terms</a>
+    <div class="nav-links" role="navigation" aria-label="Main navigation">
+      <a href="/" aria-current="page">Home</a>
+      <a href="/privacy-policy">Privacy Policy</a>
+      <a href="/terms-of-use">Terms of Use</a>
       <a href="/help">Help</a>
+      <a href="/about">About</a>
     </div>
   </nav>
 
   <!-- HERO -->
   <section class="hero">
-    <img class="hero-logo" src="/favicon.png" alt="Remindra logo" />
+    <img class="hero-logo" src="/favicon.png?v=3" alt="Remindra candle logo" />
     <h1><span>Remindra</span></h1>
     <p>Moments made timeless.</p>
-    <a class="hero-cta" href="https://play.google.com/store/apps/details?id=com.example.birthday_reminder">
-      🎂 Get the App
+    <a class="hero-cta" href="https://play.google.com/store/apps/details?id=com.remindra.birthdayreminder">
+      Get the App
     </a>
   </section>
 
   <!-- FEATURES -->
   <div class="section">
-    <h2 class="section-title">Never miss a birthday again</h2>
+    <h2 class="section-title">A thoughtful little nudge for the people you love</h2>
     <div class="features">
       <div class="feature-card">
         <div class="feature-icon">🔔</div>
         <h3>Smart Reminders</h3>
-        <p>Set a custom notification time for each birthday. Get reminded exactly when you want — no one-size-fits-all approach.</p>
+        <p>Keep birthdays, optional birth years and personal notes together. Find the next celebration at a glance.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">🎵</div>
-        <h3>Birthday Sound</h3>
-        <p>Remindra plays a celebratory sound when a birthday notification fires, so you never confuse it with ordinary alerts.</p>
+        <h3>Your Birthday Sound</h3>
+        <p>Choose a different audio file for each birthday on Android 8.0 or newer. Your selection stays on your device; birthdays without a custom choice use Remindra’s default sound.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">☁️</div>
-        <h3>Synced Everywhere</h3>
-        <p>Your birthdays are securely stored in the cloud. Sign in on any device and your list is always up to date.</p>
+        <h3>Your People, Together</h3>
+        <p>Sign in with Google to keep your birthday list in your Remindra account and see it again when you sign back in.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">🌙</div>
-        <h3>Light & Dark Mode</h3>
-        <p>Remindra automatically follows your system theme — beautiful in both light and dark environments.</p>
+        <h3>A Calm, Warm Design</h3>
+        <p>A softer cream-and-plum look keeps your list easy to scan, with light and dark appearances that follow your device.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">🔒</div>
-        <h3>Private by Design</h3>
-        <p>Your data is yours. We never sell or share it. You can delete your account and all your data at any time.</p>
+        <h3>Your Reminders, Your Time</h3>
+        <p>Choose a reminder time for each person and manage Remindra’s alert permission from Settings.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">🎂</div>
-        <h3>7-Day Heads-Up</h3>
-        <p>Get notified a week before each birthday so you have time to plan something special.</p>
+        <h3>Made for the Moment</h3>
+        <p>See the next celebration and keep the thoughtful details close, so you have a little more time to make the day theirs.</p>
       </div>
     </div>
   </div>
 
   <div class="divider"></div>
 
-  <footer>
-    <div class="footer-brand">Remindra</div>
-    <div class="footer-slogan">Because every year counts.</div>
-    <div class="footer-links">
+  <footer class="site-footer">
+    <p class="site-footer__brand">Remindra</p>
+    <p class="site-footer__tagline">Because every year counts.</p>
+    <div class="site-footer__links" role="navigation" aria-label="Footer navigation">
+      <a href="/">Home</a>
       <a href="/privacy-policy">Privacy Policy</a>
       <a href="/terms-of-use">Terms of Use</a>
-      <a href="/help">Help &amp; Contact</a>
+      <a href="/help">Help</a>
+      <a href="/about">About</a>
     </div>
-    <div class="footer-copy">&copy; 2026 Remindra. All rights reserved.</div>
+    <p class="site-footer__copyright">&copy; 2026 Remindra. All rights reserved.</p>
   </footer>
 
 </body>

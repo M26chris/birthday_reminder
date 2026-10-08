@@ -12,7 +12,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mainPageTitle => 'Upcoming birthdays';
 
   @override
-  String get appName => 'Birthday Reminder';
+  String get appName => 'Remindra';
 
   @override
   String get signIn => 'Sign in';
@@ -141,12 +141,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get request_delete_data_url =>
-      'mailto:martoxdlol@gmail.com?subject=Delete all my data&body=Hi, I want you to delete my account and all my data from the Birthday Reminder app. My email registered in the app is: ';
+      'mailto:support.remindra@gmail.com?subject=Delete all my data&body=Hi, I want you to delete my account and all my data from the Remindra app. My email registered in the app is: ';
 
   @override
   String get help_and_contact => 'Help and contact';
 
   @override
   String get help_email_link =>
-      'mailto:martoxdlol@gmail.com?subject=Birthday Reminder Help&body=Hi, I need help with the Birthday Reminder app. \n';
+      'mailto:support.remindra@gmail.com?subject=Remindra Help&body=Hi, I need help with the Remindra app. \n';
 }

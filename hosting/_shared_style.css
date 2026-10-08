@@ -1,1 +1,118 @@
-/* shared style snippet — included inline in each page */
+.site-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 12px 32px;
+  background: #542B50;
+}
+
+.site-nav .nav-brand {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.site-nav .nav-brand img {
+  width: 44px;
+  height: 44px;
+  padding: 3px;
+  border-radius: 50%;
+  background: #FAF6EF;
+  object-fit: contain;
+}
+
+.site-nav .nav-brand span {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.site-nav .nav-links {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.site-nav .nav-links a {
+  padding: 7px 11px;
+  border-radius: 20px;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 13px;
+  line-height: 1.4;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+}
+
+.site-nav .nav-links a:hover,
+.site-nav .nav-links a[aria-current="page"] {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+.site-footer {
+  padding: 32px 20px;
+  background: #542B50;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 13px;
+  text-align: center;
+}
+
+.site-footer__brand {
+  margin-bottom: 4px;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.site-footer__tagline {
+  margin-bottom: 18px;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 14px;
+  font-style: italic;
+}
+
+.site-footer__links {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-bottom: 18px;
+}
+
+.site-footer__links a {
+  color: #D4A85F;
+  text-decoration: none;
+}
+
+.site-footer__links a:hover {
+  color: #fff;
+}
+
+.site-footer__copyright {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 12px;
+}
+
+@media (max-width: 760px) {
+  .site-nav {
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 14px;
+  }
+
+  .site-nav .nav-links {
+    justify-content: center;
+  }
+
+  .site-nav .nav-links a {
+    padding: 7px 9px;
+    font-size: 12px;
+  }
+}

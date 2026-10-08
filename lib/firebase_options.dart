@@ -52,7 +52,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyC_peBAUXI6NrOc-KQES018ZZOosBBdmpM',
-    appId: '1:1006967606:android:2623ddb2a2981e7c557197',
+    appId: '1:1006967606:android:563211fb9e87cd6d557197',
     messagingSenderId: '1006967606',
     projectId: 'remindra-bc8e5',
     storageBucket: 'remindra-bc8e5.firebasestorage.app',
@@ -63,7 +63,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '1006967606',
     projectId: 'remindra-bc8e5',
     storageBucket: 'remindra-bc8e5.firebasestorage.app',
-    iosBundleId: 'net.tomascichero.birthdayremainder',
+    iosBundleId: 'com.example.birthday_reminder',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -72,7 +72,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '1006967606',
     projectId: 'remindra-bc8e5',
     storageBucket: 'remindra-bc8e5.firebasestorage.app',
-    iosBundleId: 'net.tomascichero.birthdayremainder',
+    iosBundleId: 'com.example.birthday_reminder',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(

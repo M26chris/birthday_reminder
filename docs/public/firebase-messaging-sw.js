@@ -5,10 +5,10 @@ firebase.initializeApp({
     apiKey: 'AIzaSyCedUwZjWznB0m81_nf9IY0CREOIQSNYIc',
     appId: '1:1018512304007:web:b3d446df1b1499f56b5522',
     messagingSenderId: '1018512304007',
-    projectId: 'birthday-remainder-app',
-    authDomain: 'birthday-remainder-app.firebaseapp.com',
-    databaseURL: 'https://birthday-remainder-app.firebaseio.com',
-    storageBucket: 'birthday-remainder-app.appspot.com',
+    projectId: 'remindra-bc8e5',
+    authDomain: 'remindra-bc8e5.firebaseapp.com',
+    databaseURL: 'https://remindra-bc8e5.firebaseio.com',
+    storageBucket: 'remindra-bc8e5.appspot.com',
 });
 
 const messaging = firebase.messaging();

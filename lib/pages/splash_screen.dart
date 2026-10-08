@@ -1,11 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Remindra Splash Screen
-///
-/// Kept deliberately simple — no AnimationController, no Hero tags.
-/// R8 can strip animation internals in release builds causing blank screens.
-/// A simple static layout with a built-in AnimatedOpacity (framework-level,
-/// always preserved by R8) gives us the fade without risk.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -14,85 +8,67 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  double _opacity = 0.0;
+  double _opacity = 0;
 
   @override
   void initState() {
     super.initState();
-    // Trigger fade-in on next frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) setState(() => _opacity = 1.0);
+      if (mounted) setState(() => _opacity = 1);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final background = dark ? const Color(0xFF201B22) : const Color(0xFFFAF6EF);
+    final plum = dark ? const Color(0xFFE0B4CF) : const Color(0xFF542B50);
 
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: isDark
-                ? [const Color(0xFF1A0533), const Color(0xFF121212)]
-                : [const Color(0xFFFFC107), const Color(0xFFFFF8E1)],
-          ),
-        ),
+      backgroundColor: background,
+      body: Center(
         child: AnimatedOpacity(
           opacity: _opacity,
-          duration: const Duration(milliseconds: 800),
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeOut,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Logo
-              Image.asset(
-                'assets/icon.png',
-                width: 150,
-                height: 150,
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  color:
+                      dark ? const Color(0xFF332935) : const Color(0xFFF0E5D8),
+                  borderRadius: BorderRadius.circular(38),
+                ),
+                padding: const EdgeInsets.all(16),
+                child: Image.asset('assets/icon.png'),
               ),
-
-              const SizedBox(height: 24),
-
-              // App name
+              const SizedBox(height: 25),
               Text(
                 'Remindra',
                 style: TextStyle(
-                  fontSize: 36,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : const Color(0xFF4A148C),
-                  letterSpacing: 1.5,
+                  color: plum,
+                  fontSize: 31,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.5,
                 ),
               ),
-
-              const SizedBox(height: 8),
-
-              // Slogan
+              const SizedBox(height: 7),
               Text(
-                'Because every year counts.',
+                'Remember the moments that matter.',
                 style: TextStyle(
-                  fontSize: 15,
-                  fontStyle: FontStyle.italic,
-                  color: isDark ? Colors.white70 : const Color(0xFF6A1B9A),
+                  color: dark ? Colors.white70 : const Color(0xFF766D74),
+                  fontSize: 14,
                 ),
               ),
-
-              const SizedBox(height: 52),
-
-              // Loading indicator
-              SizedBox(
-                width: 26,
-                height: 26,
+              const SizedBox(height: 38),
+              SizedBox.square(
+                dimension: 22,
                 child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    isDark
-                        ? const Color(0xFFFFC107)
-                        : const Color(0xFF6A1B9A),
-                  ),
+                  strokeWidth: 2,
+                  color: plum,
                 ),
               ),
             ],

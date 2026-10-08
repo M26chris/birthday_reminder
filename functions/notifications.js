@@ -121,7 +121,7 @@ async function sendNotification(birthday, user, isFuture = false) {
         },
         webpush: {
             fcmOptions: {
-                link: `https://birthday-remainder-app.web.app/app/#/?birthday=${encodeURIComponent(birthday.id)}`,
+                link: `https://remindra-bc8e5.web.app/app/#/?birthday=${encodeURIComponent(birthday.id)}`,
             },
         },
         data: {
